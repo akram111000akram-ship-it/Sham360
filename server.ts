@@ -36,10 +36,25 @@ function getGeminiClient(): GoogleGenAI | null {
 }
 
 // Highly customized fallback generator if API key is missing or call fails
-function generateLocalPlanFallback(category: string, city: string) {
-  const cleanCat = category || "العمل التجاري";
-  const cleanCity = city || "سوريا";
+function generateLocalPlanFallback(category: string, city: string, lang: string = "ar") {
+  const isEn = lang === "en";
+  const cleanCat = category || (isEn ? "Business" : "العمل التجاري");
+  const cleanCity = city || (isEn ? "Syria" : "سوريا");
   
+  if (isEn) {
+    return {
+      keywords: [
+        `Best ${cleanCat} in ${cleanCity}`,
+        `Top rated ${cleanCat} ${cleanCity}`,
+        `${cleanCat} phone number ${cleanCity}`,
+        `${cleanCat} location & map ${cleanCity}`,
+        `Order from ${cleanCat} ${cleanCity}`
+      ],
+      marketing_hook: `Looking for an exceptional experience in the heart of ${cleanCity}? We are proud to offer top-tier services tailored for ${cleanCat}. Visit us today or get in touch directly to book or inquire!`,
+      growth_action: `Local data shows that over 75% of searches for "${cleanCat}" happen on mobile devices. Optimizing your Google Business Profile with direct 1-click WhatsApp and call buttons will increase lead conversion by up to 40%.`
+    };
+  }
+
   const keywords = [
     `أفضل ${cleanCat} في ${cleanCity}`,
     `أقرب ${cleanCat} في ${cleanCity}`,
@@ -60,17 +75,39 @@ function generateLocalAssessmentFallback(
   category: string,
   city: string,
   currentStatus: string,
-  goal: string
+  goal: string,
+  lang: string = "ar"
 ) {
-  const score = Math.floor(Math.random() * (85 - 45 + 1)) + 45;
+  const isEn = lang === "en";
+  const score = Math.floor(Math.random() * (85 - 55 + 1)) + 55;
   
-  let recommendedService = "تصميم المواقع الفاخرة وتطويرها (Websites)";
-  if (currentStatus.includes("بدون موقع")) {
-    recommendedService = "تصميم المواقع الفاخرة وتطويرها (Websites)";
-  } else if (currentStatus.includes("لا أملك أي حضور")) {
-    recommendedService = "تفعيل وتحسين خرائط جوجل (Google Business)";
+  let recommendedService = isEn ? "High-End Custom Website Development" : "تصميم المواقع الفاخرة وتطويرها (Websites)";
+  if (currentStatus.includes("بدون موقع") || currentStatus.toLowerCase().includes("no website")) {
+    recommendedService = isEn ? "High-End Custom Website Development" : "تصميم المواقع الفاخرة وتطويرها (Websites)";
+  } else if (currentStatus.includes("لا أملك أي حضور") || currentStatus.toLowerCase().includes("no presence")) {
+    recommendedService = isEn ? "Google Maps & Business Verification" : "تفعيل وتحسين خرائط جوجل (Google Business)";
   } else {
-    recommendedService = "الجولات الافتراضية 360° وتصوير المقرات";
+    recommendedService = isEn ? "8K 360° Virtual Tours & Media" : "الجولات الافتراضية 360° وتصوير المقرات";
+  }
+
+  if (isEn) {
+    return {
+      score,
+      analysis: `Based on auditing "${bizName}" (${category}) in ${city}, your current digital visibility reaches approximately ${score}% of its full potential. Nearby competitors are actively capturing digital searches, and establishing a verified Google Maps presence with virtual tours will bridge this gap immediately.`,
+      action_steps: [
+        `Claim and verify your official Google Business Profile to boost local search rankings in ${city}.`,
+        `Capture high-definition 360° virtual tours allowing clients to inspect your venue before visiting.`,
+        `Deploy a fast, mobile-optimized landing page with direct 1-click WhatsApp lead routing.`
+      ],
+      keywords: [
+        `${category} in ${city}`,
+        `Best ${category} ${city}`,
+        `${bizName} map location`,
+        `${bizName} contact phone`,
+        `Book ${category} ${city}`
+      ],
+      recommended_service: recommendedService
+    };
   }
 
   const analysis = `بناءً على فحص النشاط "${bizName}" في تخصص "${category}" بمدينة "${city}"، يتضح أن هناك فجوة حضور رقمي كبيرة مقارنة بالمنافسين. نسبة ظهورك الحالية تعادل فقط ${score}% من إمكانيات السوق المتاحة. المنافسة الرقمية تشتد، والعملاء يفضلون اتخاذ قرارهم بناءً على الصور الحقيقية وسهولة الوصول، وعدم استغلال هذه النقاط يفقدك عملاء يوميين مؤكدين.`;
@@ -100,7 +137,8 @@ function generateLocalAssessmentFallback(
 
 // 1. API Route: AI Local Plan Generator (Smart AI Lab)
 app.post("/api/plan", async (req, res) => {
-  const { category, city } = req.body;
+  const { category, city, lang } = req.body;
+  const userLang = lang === "en" ? "en" : "ar";
 
   if (!category || !city) {
     return res.status(400).json({ error: "يرجى توفير نوع النشاط والمدينة المستهدفة" });
@@ -110,22 +148,22 @@ app.post("/api/plan", async (req, res) => {
 
   if (!ai) {
     console.log("No valid GEMINI_API_KEY found, responding with high-quality localized fallback data.");
-    return res.json(generateLocalPlanFallback(category, city));
+    return res.json(generateLocalPlanFallback(category, city, userLang));
   }
 
   try {
-    const prompt = `أنت مستشار تسويق رقمي سوري محترف لعلامة Sham360.
-قم بابتكار خطة تسويق محلية فورية للنشاط التجاري التالي في سوريا:
-- نوع المجال والخدمة: ${category}
-- المدينة المستهدفة: ${city}
+    const prompt = `You are a professional digital marketing advisor for Sham360.
+Create an immediate local marketing strategy for this business in Syria:
+- Industry/Service: ${category}
+- Target City/Location: ${city}
 
-يرجى توليد الإجابة بدقة متوافقة مع البيئة والمفردات السورية وبأسلوب احترافي راقٍ (شابه بأسلوب Stripe/Apple التسويقي البسيط والقوي).`;
+Respond in ${userLang === "en" ? "English" : "Arabic"}. Ensure high quality, professional tone, and localized accuracy.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "أنت خبير رقمي في شركة Sham360 بدمشق. رد دائماً باللغة العربية واصنع مخرجات تسويقية بالغة الدقة.",
+        systemInstruction: `You are an AI marketing specialist at Sham360 in Damascus. Always respond in ${userLang === "en" ? "English" : "Arabic"} in structured JSON.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -133,15 +171,15 @@ app.post("/api/plan", async (req, res) => {
             keywords: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: "5 كلمات مفتاحية دقيقة جداً باللغة العربية لخرائط جوجل وسيرش المحلي"
+              description: "5 high-converting SEO keywords for Google Maps and local search"
             },
             marketing_hook: {
               type: Type.STRING,
-              description: "منشور أو نص تسويقي جذاب ومؤثر مكتوب باللغة العربية مع لمسات ومفردات محببة تناسب الجمهور السوري والمحلي"
+              description: "A compelling marketing post or hook tailored to the target city"
             },
             growth_action: {
               type: Type.STRING,
-              description: "نصيحة استراتيجية تسويقية وتوجيه رقمي عملي للتفوق الفوري في المنطقة"
+              description: "An actionable strategic recommendation for instant growth"
             }
           },
           required: ["keywords", "marketing_hook", "growth_action"]
@@ -155,17 +193,21 @@ app.post("/api/plan", async (req, res) => {
     }
 
     const data = JSON.parse(text.trim());
+    if (!data.keywords || !Array.isArray(data.keywords)) {
+      throw new Error("Invalid output format from Gemini");
+    }
     return res.json(data);
   } catch (error) {
     console.error("Error in /api/plan using Gemini API:", error);
     // Graceful fallback to maintain excellent user experience
-    return res.json(generateLocalPlanFallback(category, city));
+    return res.json(generateLocalPlanFallback(category, city, userLang));
   }
 });
 
 // 2. API Route: AI Digital Presence Auditor (Assessment Modal)
 app.post("/api/assessment", async (req, res) => {
-  const { bizName, category, city, currentStatus, goal, phone } = req.body;
+  const { bizName, category, city, currentStatus, goal, phone, lang } = req.body;
+  const userLang = lang === "en" ? "en" : "ar";
 
   if (!bizName || !city || !phone) {
     return res.status(400).json({ error: "يرجى ملء كافة الحقول الأساسية المطلوبة" });
@@ -175,49 +217,49 @@ app.post("/api/assessment", async (req, res) => {
 
   if (!ai) {
     console.log("No valid GEMINI_API_KEY found for assessment, returning customized fallback data.");
-    return res.json(generateLocalAssessmentFallback(bizName, category || "عمل تجاري", city, currentStatus || "", goal || ""));
+    return res.json(generateLocalAssessmentFallback(bizName, category || "عمل تجاري", city, currentStatus || "", goal || "", userLang));
   }
 
   try {
-    const prompt = `قم بإجراء تدقيق حضور رقمي تكتيكي وفوري لهذا النشاط التجاري السوري:
-- اسم العمل التجاري: ${bizName}
-- نوع التخصص والمجال: ${category}
-- المدينة والموقع: ${city}
-- الحالة الرقمية الحالية: ${currentStatus}
-- الهدف الأساسي للمشروع: ${goal}
+    const prompt = `Conduct a digital presence audit for this business in Syria:
+- Business Name: ${bizName}
+- Industry: ${category}
+- City: ${city}
+- Current Digital Status: ${currentStatus}
+- Primary Goal: ${goal}
 
-يرجى توليد تقرير تدقيق رقمي متكامل، واقعي، وحيادي يبرز الفجوة الرقمية التي يمكن لشركة Sham360 علاجها.`;
+Respond in ${userLang === "en" ? "English" : "Arabic"}. Generate a comprehensive, realistic audit report highlighting visibility gaps.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
-        systemInstruction: "أنت المدقق الرقمي الذكي والمهندس التقني لشركة Sham360. لغتك عربية سليمة، راقية، ومقنعة للغاية.",
+        systemInstruction: `You are the digital auditor at Sham360. Always respond in ${userLang === "en" ? "English" : "Arabic"} in structured JSON.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             score: {
               type: Type.INTEGER,
-              description: "رقم بين 35 و 95 يعبر بدقة عن تقييم حضورهم الحالي من 100"
+              description: "A score between 40 and 95 representing digital presence out of 100"
             },
             analysis: {
               type: Type.STRING,
-              description: "تحليل تسويقي وتقني مخصص ومقنع يعكس الفجوات في سوق هذه المدينة ونقاط الضعف التي يمكن استغلالها فوراً"
+              description: "Detailed analysis highlighting digital gaps"
             },
             action_steps: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: "3 خطوات عملية مخصصة وتكتيكية ينبغي عليهم اتخاذها فوراً"
+              description: "3 actionable steps to take"
             },
             keywords: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: "5 كلمات مفتاحية محلية دقيقة للخرائط والبحث في هذه المدينة"
+              description: "5 local search keywords"
             },
             recommended_service: {
               type: Type.STRING,
-              description: "أفضل خدمة من خدمات Sham360 تناسب حالتهم وهدفهم الحالي"
+              description: "Best Sham360 service for them"
             }
           },
           required: ["score", "analysis", "action_steps", "keywords", "recommended_service"]
@@ -231,10 +273,13 @@ app.post("/api/assessment", async (req, res) => {
     }
 
     const data = JSON.parse(text.trim());
+    if (!data.score || !data.analysis || !Array.isArray(data.keywords)) {
+      throw new Error("Invalid output format from Gemini");
+    }
     return res.json(data);
   } catch (error) {
     console.error("Error in /api/assessment using Gemini API:", error);
-    return res.json(generateLocalAssessmentFallback(bizName, category || "عمل تجاري", city, currentStatus || "", goal || ""));
+    return res.json(generateLocalAssessmentFallback(bizName, category || "عمل تجاري", city, currentStatus || "", goal || "", userLang));
   }
 });
 
