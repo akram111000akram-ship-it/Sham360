@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "Public smart NFC profile for an individual or business.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the profile."
+        },
+        "slug": {
+          "type": "string",
+          "description": "Public URL slug, e.g., 'akram' or 'al-yasmeen'."
+        },
+        "profileType": {
+          "type": "string",
+          "enum": ["individual", "business"],
+          "description": "Type of smart profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name or business name."
+        },
+        "title": {
+          "type": "string",
+          "description": "Job title or business category."
+        },
+        "businessName": {
+          "type": "string",
+          "description": "Official company name if applicable."
+        },
+        "category": {
+          "type": "string",
+          "description": "Business or professional category."
+        },
+        "categorySlug": {
+          "type": "string",
+          "description": "URL-friendly category key for directory filtering."
+        },
+        "city": {
+          "type": "string",
+          "description": "Syrian city or governorate, e.g., 'دمشق', 'حلب'."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short bio or business description."
+        },
+        "profileImage": {
+          "type": "string",
+          "description": "URL to the avatar or primary photo."
+        },
+        "coverImage": {
+          "type": "string",
+          "description": "Cover banner image URL."
+        },
+        "logoImage": {
+          "type": "string",
+          "description": "Logo overlay URL."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Primary contact phone number."
+        },
+        "whatsapp": {
+          "type": "string",
+          "description": "WhatsApp direct messaging number."
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email address."
+        },
+        "website": {
+          "type": "string",
+          "description": "Official website URL."
+        },
+        "location": {
+          "type": "string",
+          "description": "Address or city text."
+        },
+        "googleMapsUrl": {
+          "type": "string",
+          "description": "Google Maps link for navigation."
+        },
+        "directoryEnabled": {
+          "type": "boolean",
+          "description": "Whether this profile is showcased in the Syrian Business Directory."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the profile is active and publicly accessible."
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Official verification badge."
+        }
+      },
+      "required": ["id", "slug", "profileType", "name", "isActive", "directoryEnabled"]
+    }
+  },
+  "firestore": {
+    "/profiles/{profileId}": {
+      "schema": "Profile",
+      "description": "Smart profile records accessed by public slug."
+    }
+  }
+}

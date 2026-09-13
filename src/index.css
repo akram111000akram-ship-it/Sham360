@@ -7,11 +7,74 @@
 }
 
 /* Custom visual styles and animations */
+body {
+  background-color: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .dot-grid {
-  background-image: radial-gradient(rgba(59, 130, 246, 0.08) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(rgba(0, 102, 255, 0.08) 1.2px, transparent 1.2px);
   background-size: 24px 24px;
 }
 
 .font-en {
   font-family: 'Inter', sans-serif;
+}
+
+/* Emil Kowalski / Vercel style subtle shimmer sweep */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%);
+  }
+  50%, 100% {
+    transform: translateX(150%);
+  }
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 100%
+  );
+  transform: translateX(-150%);
+  animation: shimmer-sweep 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.shimmer-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  transform: translateX(-150%);
+  animation: shimmer-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
 }

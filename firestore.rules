@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(profileData) {
+      return isSignedIn() && (
+        profileData.ownerUid == request.auth.uid ||
+        request.auth.token.email == 'Akram111000Akram@gmail.com'
+      );
+    }
+
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Profiles collection:
+    // - Public visitors can read active smart profiles (for /p/:slug NFC & QR scan traffic)
+    // - Authenticated owners can read/create/update their assigned profile records
+    match /profiles/{profileId} {
+      allow get: if isValidId(profileId) && (resource.data.isActive == true || isOwner(resource.data));
+      allow list: if resource.data.isActive == true || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isOwner(resource.data) && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if false;
+    }
+  }
+}

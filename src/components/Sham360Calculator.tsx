@@ -108,26 +108,26 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
   );
 
   return (
-    <div className={`bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm space-y-6 ${isAr ? "text-right" : "text-left"}`}>
+    <div className={`bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm space-y-6 text-slate-900 ${isAr ? "text-right" : "text-left"}`}>
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-bold mb-2">
             <Calculator className="w-3.5 h-3.5 text-blue-600" />
             <span>{isAr ? "حاسبة التحول الرقمي الذكية" : "Smart Digital Transformation Calculator"}</span>
           </div>
           <h3 className="text-lg font-black text-slate-950">
             {isAr ? "احسب تكلفة وعائد تطوير حضورك الرقمي مع Sham360" : "Calculate Your ROI & Growth with Sham360"}
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             {isAr 
               ? "حدد نوع مجالك والخدمات التي تحتاجها لمعرفة النسبة التقديرية لنمو وصولك للزبائن والمدة المتوقعة."
               : "Select your business sector and desired services to calculate projected audience growth and delivery timeframe."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 p-2 rounded-2xl border border-slate-100">
+        <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-50 p-2 rounded-2xl border border-slate-200">
           <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
           <span className="text-[11px] font-bold text-slate-700">{isAr ? "تقدير حصري فوري" : "Instant Custom Estimate"}</span>
         </div>
@@ -135,8 +135,8 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
 
       {/* Step 1: Select Business Type */}
       <div className="space-y-3">
-        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-          <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black flex items-center justify-center">1</span>
+        <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black flex items-center justify-center">1</span>
           <span>{isAr ? "اختر مجالك التجاري:" : "Select your business sector:"}</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -146,7 +146,7 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
               onClick={() => setSelectedBusinessType(type.id)}
               className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between items-start gap-2 cursor-pointer ${
                 selectedBusinessType === type.id
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/15"
+                  ? "bg-blue-600 text-white font-black border-blue-600 shadow-md shadow-blue-500/20"
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-100"
               }`}
             >
@@ -159,8 +159,8 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
 
       {/* Step 2: Select Required Services */}
       <div className="space-y-3">
-        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-          <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-black flex items-center justify-center">2</span>
+        <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <span className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black flex items-center justify-center">2</span>
           <span>{isAr ? "اختر الخدمات المطلوبة (يمكنك اختيار أكثر من خدمة):" : "Select required services (multiple selection allowed):"}</span>
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -172,8 +172,8 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
                 onClick={() => toggleService(service.id)}
                 className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-3.5 ${
                   isSelected
-                    ? "bg-blue-50/70 border-blue-200 shadow-sm"
-                    : "bg-slate-50/40 border-slate-100 hover:border-slate-200"
+                    ? "bg-blue-50/70 border-blue-200 shadow-xs"
+                    : "bg-slate-50/50 border-slate-100 hover:border-slate-200"
                 }`}
               >
                 <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
@@ -184,10 +184,10 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
 
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-bold ${isSelected ? "text-blue-950" : "text-slate-800"}`}>
+                    <span className={`text-xs font-bold ${isSelected ? "text-blue-900" : "text-slate-900"}`}>
                       {isAr ? service.name : service.nameEn}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {isAr ? service.estimatedGrowth : service.estimatedGrowthEn}
                     </span>
                   </div>
@@ -237,7 +237,7 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
           {/* Direct CTA Button */}
           <div className="flex flex-col gap-2.5 justify-center">
             <a
-              href={`https://wa.me/963988360360?text=${waMessage}`}
+              href={`https://wa.me/963933888999?text=${waMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3.5 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 group"
