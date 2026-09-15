@@ -109,34 +109,46 @@ export const Sham360DirectoryView: React.FC = () => {
         count: DIRECTORY_DATA.length
       },
       {
-        id: "museums",
-        label: isAr ? "🏛️ متاحف ومعالم أثرية" : "🏛️ Museums & Heritage",
+        id: "historic",
+        label: isAr ? "🏛️ معالم تاريخية وقلاع" : "🏛️ Historic & Castles",
         icon: Landmark,
-        count: DIRECTORY_DATA.filter((i) => i.category === "museums").length
+        count: DIRECTORY_DATA.filter((i) => i.category === "historic" || i.category === "museums").length
+      },
+      {
+        id: "religious",
+        label: isAr ? "🕌 معالم دينية وأديرة" : "🕌 Religious & Monasteries",
+        icon: Compass,
+        count: DIRECTORY_DATA.filter((i) => i.category === "religious").length
+      },
+      {
+        id: "vr_tour",
+        label: isAr ? "🥽 جولات 360° VR" : "🥽 360° VR Tours",
+        icon: Eye,
+        count: DIRECTORY_DATA.filter((i) => i.hasVrTour || i.category === "vr_tour").length
+      },
+      {
+        id: "markets",
+        label: isAr ? "🛍️ أسواق وخانات" : "🛍️ Bazaars & Souks",
+        icon: LayoutGrid,
+        count: DIRECTORY_DATA.filter((i) => i.category === "markets").length
+      },
+      {
+        id: "cultural",
+        label: isAr ? "🎨 متاحف وقصور ثقافية" : "🎨 Museums & Palaces",
+        icon: Layers,
+        count: DIRECTORY_DATA.filter((i) => i.category === "cultural" || i.category === "museums").length
       },
       {
         id: "restaurants",
-        label: isAr ? "🍔 مطاعم وكافيهات" : "🍔 Restaurants & Cafes",
+        label: isAr ? "🍔 مطاعم ومقاهي" : "🍔 Dining & Cafes",
         icon: Utensils,
         count: DIRECTORY_DATA.filter((i) => i.category === "restaurants").length
       },
       {
-        id: "freelancers",
-        label: isAr ? "🛠️ مستقلون وخبراء" : "🛠️ Freelancers & Experts",
-        icon: Wrench,
-        count: DIRECTORY_DATA.filter((i) => i.category === "freelancers").length
-      },
-      {
-        id: "clinics",
-        label: isAr ? "🩺 عيادات ومراكز طبية" : "🩺 Clinics & Medical",
-        icon: Stethoscope,
-        count: DIRECTORY_DATA.filter((i) => i.category === "clinics").length
-      },
-      {
         id: "businesses",
-        label: isAr ? "🏢 شركات ومتاجر" : "🏢 Companies & Stores",
+        label: isAr ? "🏢 شركات ومتاجر" : "🏢 Companies & Services",
         icon: Building2,
-        count: DIRECTORY_DATA.filter((i) => i.category === "businesses").length
+        count: DIRECTORY_DATA.filter((i) => i.category === "businesses" || i.category === "freelancers" || i.category === "clinics").length
       }
     ];
   }, [isAr]);
@@ -145,8 +157,18 @@ export const Sham360DirectoryView: React.FC = () => {
   const filteredItems = useMemo(() => {
     return DIRECTORY_DATA.filter((item) => {
       // 1. Category Filter
-      if (activeCategory !== "all" && item.category !== activeCategory) {
-        return false;
+      if (activeCategory !== "all") {
+        if (activeCategory === "vr_tour") {
+          if (!item.hasVrTour && item.category !== "vr_tour") return false;
+        } else if (activeCategory === "historic") {
+          if (item.category !== "historic" && item.category !== "museums") return false;
+        } else if (activeCategory === "cultural") {
+          if (item.category !== "cultural" && item.category !== "museums") return false;
+        } else if (activeCategory === "businesses") {
+          if (item.category !== "businesses" && item.category !== "freelancers" && item.category !== "clinics") return false;
+        } else if (item.category !== activeCategory) {
+          return false;
+        }
       }
 
       // 2. Map Hotspot Filter (when in map mode or selected via map)
@@ -240,8 +262,8 @@ export const Sham360DirectoryView: React.FC = () => {
   };
 
   const quickSearchTags = isAr
-    ? ["متحف دمشق الوطني", "قلعة الحصن حمص", "قصر العظم", "متحف تدمر الأثري", "مطعم النارنج", "مهندس إنترنت الأشياء", "قلعة حلب"]
-    : ["National Museum", "Krak des Chevaliers", "Azm Palace", "Palmyra Museum", "Naranj Restaurant", "IoT Engineer", "Aleppo Citadel"];
+    ? ["الجامع الأموي", "قلعة حلب", "قلعة الحصن", "نواعير حماة", "قصر العظم", "آثار تدمر", "معلولا", "مطعم النارنج", "سوق الحميدية"]
+    : ["Umayyad Mosque", "Aleppo Citadel", "Krak des Chevaliers", "Hama Norias", "Azm Palace", "Palmyra Ruins", "Maaloula", "Naranj Restaurant", "Al-Hamidiyah"];
 
   return (
     <div

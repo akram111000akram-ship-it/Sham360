@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { LogoIcon } from "../Logo";
 import { DamasceneVR360Showcase } from "../DamasceneVR360Showcase";
+import { ProfileAudioPlayer } from "./ProfileAudioPlayer";
 import {
   RealWhatsappIcon,
   RealPhoneIcon,
@@ -143,6 +144,10 @@ export interface Sham360ProfileData {
   direct_redirect_url?: string;
   directRedirectEnabled?: boolean;
   directRedirectUrl?: string;
+  backgroundMusicEnabled?: boolean;
+  backgroundMusicPreset?: "damascene_oud" | "chill_ambient" | "courtyard_fountain" | "soundhelix_ambient" | "custom";
+  backgroundMusicUrl?: string;
+  backgroundMusicTitle?: string;
 }
 
 export interface Sham360ProfileViewProps {
@@ -1442,6 +1447,16 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Floating Lightweight Background Music Player */}
+        <ProfileAudioPlayer
+          enabled={profile.backgroundMusicEnabled}
+          preset={profile.backgroundMusicPreset}
+          audioUrl={profile.backgroundMusicUrl}
+          audioTitle={profile.backgroundMusicTitle}
+          isAr={isAr}
+          primaryColor={activePalette.primary}
+        />
       </motion.div>
     </div>
   );
@@ -1459,6 +1474,9 @@ export const mockIndividualProfile: Sham360ProfileData = {
   nameEn: "Eng. Akram Dimashqi",
   titleOrCategory: "استشاري تحول رقمي ومصوّر 360° معتمد",
   titleOrCategoryEn: "Digital Transformation Consultant & Certified 360° Photographer",
+  backgroundMusicEnabled: true,
+  backgroundMusicPreset: "damascene_oud",
+  backgroundMusicTitle: "تقاسيم عود شامي أصيل",
   jobTitle: "استشاري نظم ذكية وبطاقات NFC المعتمدة",
   jobTitleEn: "Smart NFC Solutions & Digital Identity Consultant",
   companyName: "منظومة شام 360 للحلول الذكية",
@@ -1555,6 +1573,9 @@ export const mockBusinessProfile: Sham360ProfileData = {
   nameEn: "Al Yasmeen Damascene Restaurant & Palace",
   titleOrCategory: "مطعم شرقي عريق وقصر تراثي دمشقي",
   titleOrCategoryEn: "Historic Damascene Oriental Restaurant & Heritage Palace",
+  backgroundMusicEnabled: true,
+  backgroundMusicPreset: "courtyard_fountain",
+  backgroundMusicTitle: "خرير ماء ونسيم باحة دمشقية",
   jobTitle: "إدارة الضيافة والمناسبات التراثية",
   jobTitleEn: "Hospitality & Heritage Events Management",
   companyName: "مجموعة الياسمين السياحية",

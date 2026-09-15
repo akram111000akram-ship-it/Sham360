@@ -68,6 +68,12 @@ export interface FirestoreProfile {
   direct_redirect_url?: string;
   directRedirectEnabled?: boolean;
   directRedirectUrl?: string;
+
+  // Background Music / نغمة البروفايل والخلفية الصوتية
+  backgroundMusicEnabled?: boolean;
+  backgroundMusicPreset?: "damascene_oud" | "chill_ambient" | "courtyard_fountain" | "soundhelix_ambient" | "custom";
+  backgroundMusicUrl?: string;
+  backgroundMusicTitle?: string;
   
   // Status & Metadata
   isActive: boolean;

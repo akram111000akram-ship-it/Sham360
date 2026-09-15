@@ -168,6 +168,10 @@ export function mapFirestoreToProfileView(docData: FirestoreProfile): Sham360Pro
     direct_redirect_url: docData.direct_redirect_url || docData.directRedirectUrl || "",
     directRedirectEnabled: docData.direct_redirect_enabled ?? docData.directRedirectEnabled ?? false,
     directRedirectUrl: docData.direct_redirect_url || docData.directRedirectUrl || "",
+    backgroundMusicEnabled: Boolean(docData.backgroundMusicEnabled),
+    backgroundMusicPreset: docData.backgroundMusicPreset || "damascene_oud",
+    backgroundMusicUrl: docData.backgroundMusicUrl || "",
+    backgroundMusicTitle: docData.backgroundMusicTitle || "",
     links: docData.links && docData.links.length > 0
       ? docData.links
       : [

@@ -16,10 +16,12 @@ import {
 import { updateProfileInSupabase, isSupabaseConfigured } from "../services/supabase";
 import { FirestoreProfile, Sham360ProfileData } from "../types";
 import { Sham360ProfileView } from "../components/Sham360ProfileView";
+import { DashboardAuth } from "../components/dashboard/DashboardAuth";
 import { Logo } from "../components/Logo";
 import {
   User,
   LogOut,
+  LogIn,
   ExternalLink,
   Edit3,
   QrCode,
@@ -49,8 +51,13 @@ import {
   Sliders,
   Save,
   RotateCcw,
-  Database
+  Database,
+  Music,
+  Volume2,
+  Play,
+  Pause
 } from "lucide-react";
+import { AUDIO_PRESETS, AudioPresetType } from "../components/profile/ProfileAudioPlayer";
 
 export const Dashboard: React.FC = () => {
   const { navigate } = useRouter();
@@ -60,6 +67,7 @@ export const Dashboard: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Default to demo/active edit for immediate preview
+  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
 
   // Active Tab
   type DashboardTab = "settings" | "links" | "nfc" | "analytics" | "preview";
@@ -87,6 +95,12 @@ export const Dashboard: React.FC = () => {
     // Direct Tap Redirect Mode dynamic fields
     direct_redirect_enabled: false,
     direct_redirect_url: "",
+    
+    // Background Music / نغمة البروفايل
+    backgroundMusicEnabled: true,
+    backgroundMusicPreset: "damascene_oud",
+    backgroundMusicUrl: "",
+    backgroundMusicTitle: "تقاسيم عود شامي أصيل",
     
     directoryEnabled: true,
     isActive: true,
@@ -299,10 +313,29 @@ export const Dashboard: React.FC = () => {
     saveProfileChanges(updated, true);
   };
 
-  // Quick logout
+  // Auth Handlers
   const handleLogout = async () => {
-    await logout();
-    navigate("/profile");
+    try {
+      await logout();
+      setCurrentUser(null);
+      setIsDemoMode(true);
+      showToast(isAr ? "تم تسجيل الخروج بنجاح" : "Successfully signed out", "info");
+    } catch (err: any) {
+      console.error("Logout failed:", err);
+      showToast(isAr ? "فشل تسجيل الخروج" : "Logout failed", "error");
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    setIsDemoMode(false);
+    showToast(isAr ? "تم تسجيل الدخول بنجاح!" : "Signed in successfully!");
+  };
+
+  const handleDemoLogin = () => {
+    setShowAuthModal(false);
+    setIsDemoMode(true);
+    showToast(isAr ? "تم التبديل إلى وضع التجربة السريعة" : "Switched to Quick Demo Mode", "info");
   };
 
   // Convert to Sham360ProfileData for live preview
@@ -321,6 +354,10 @@ export const Dashboard: React.FC = () => {
     isVerified: profile.isVerified,
     direct_redirect_enabled: profile.direct_redirect_enabled,
     direct_redirect_url: profile.direct_redirect_url,
+    backgroundMusicEnabled: profile.backgroundMusicEnabled,
+    backgroundMusicPreset: profile.backgroundMusicPreset,
+    backgroundMusicUrl: profile.backgroundMusicUrl,
+    backgroundMusicTitle: profile.backgroundMusicTitle,
     contactInfo: {
       phone: profile.phone,
       whatsapp: profile.whatsapp,
@@ -422,6 +459,56 @@ export const Dashboard: React.FC = () => {
               <Save className="w-3.5 h-3.5" />
               <span>{saving ? (isAr ? "جاري الحفظ..." : "Saving...") : (isAr ? "حفظ التغييرات" : "Save")}</span>
             </button>
+
+            {/* Authentication Action in Header */}
+            <div className="border-s border-slate-200 ps-2 sm:ps-3 ms-1 flex items-center">
+              {currentUser ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-800">
+                    {currentUser.photoURL ? (
+                      <img
+                        src={currentUser.photoURL}
+                        alt={currentUser.displayName || "User"}
+                        referrerPolicy="no-referrer"
+                        className="w-6 h-6 rounded-full object-cover border border-slate-300"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-[#0066FF] text-white flex items-center justify-center text-[10px] font-black uppercase">
+                        {(currentUser.displayName || currentUser.email || "U").charAt(0)}
+                      </div>
+                    )}
+                    <div className="hidden lg:block text-right">
+                      <p className="text-[11px] font-bold text-slate-900 truncate max-w-[120px]">
+                        {currentUser.displayName || currentUser.email?.split("@")[0]}
+                      </p>
+                      <p className="text-[9px] text-slate-500 truncate max-w-[120px]">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    title={isAr ? "تسجيل الخروج" : "Log Out"}
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">{isAr ? "خروج" : "Log Out"}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs shadow-emerald-600/20 cursor-pointer"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>{isAr ? "تسجيل الدخول" : "Sign In"}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -496,9 +583,36 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* =========================================================================
-            TAB 1: SETTINGS & DIRECT TAP REDIRECT MODE (CORE USER REQUIREMENT)
-           ========================================================================= */}
+        {/* Demo Mode / Active Edit Banner with Sign-In CTA */}
+        {!currentUser && isDemoMode && (
+          <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-amber-50 border border-blue-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-800">
+                  {isAr ? "أنت تستخدم لوحة التحكم بوضع التجربة المباشرة" : "You are exploring the Dashboard in Quick Demo / Live Mode"}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {isAr
+                    ? "يمكنك تحرير الملف، اختبار التوجيه المباشر، وتوليد رموز QR فوراً. سجّل دخولك لحفظ بياناتك في حسابك السحابي الدائم."
+                    : "You can edit links, test Direct Tap Mode, and inspect QR codes instantly. Sign in to permanently bind profiles to your account."}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-[#0066FF] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>{isAr ? "تسجيل الدخول / ربط الحساب" : "Sign In / Bind Account"}</span>
+              </button>
+            </div>
+          </div>
+        )}
         {activeTab === "settings" && (
           <div className="space-y-6">
             {/* -------------------------------------------------------------
@@ -745,6 +859,161 @@ export const Dashboard: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* Background Music & Soundscape Card */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#0066FF] flex items-center justify-center shrink-0">
+                    <Music className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">
+                      {isAr ? "نغمة البروفايل والخلفية الموسيقية" : "Profile Background Music & Sound"}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {isAr
+                        ? "أضف تجربة صوتية شرقية هادئة تظهر كزر عائم أنيق وسريع الاستجابة لزوار صفحتك"
+                        : "Add an elegant oriental soundscape that appears as a floating lightweight player"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toggle Enable/Disable */}
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <span className="text-xs font-bold text-slate-700">
+                    {profile.backgroundMusicEnabled
+                      ? (isAr ? "مفعّلة" : "Enabled")
+                      : (isAr ? "معطّلة" : "Disabled")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !profile.backgroundMusicEnabled;
+                      setProfile({ ...profile, backgroundMusicEnabled: next });
+                    }}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                      profile.backgroundMusicEnabled ? "bg-[#0066FF]" : "bg-slate-200"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                        profile.backgroundMusicEnabled
+                          ? isAr
+                            ? "-translate-x-5"
+                            : "translate-x-5"
+                          : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {profile.backgroundMusicEnabled && (
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  {/* Preset Options Grid */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-3">
+                      {isAr ? "اختر النغمة أو الأجواء الصوتية:" : "Select Soundscape Preset:"}
+                    </label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {AUDIO_PRESETS.map((preset) => {
+                        const isSelected = (profile.backgroundMusicPreset || "damascene_oud") === preset.id;
+                        return (
+                          <div
+                            key={preset.id}
+                            onClick={() => {
+                              setProfile({
+                                ...profile,
+                                backgroundMusicPreset: preset.id,
+                                backgroundMusicTitle: isAr ? preset.nameAr : preset.nameEn,
+                                ...(preset.streamUrl ? { backgroundMusicUrl: preset.streamUrl } : {})
+                              });
+                            }}
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                              isSelected
+                                ? "border-[#0066FF] bg-blue-50/50 shadow-xs"
+                                : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h4 className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                                  <Music className={`w-3.5 h-3.5 ${isSelected ? "text-[#0066FF]" : "text-slate-400"}`} />
+                                  <span>{isAr ? preset.nameAr : preset.nameEn}</span>
+                                </h4>
+                                <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                                  {isAr ? preset.descAr : preset.descEn}
+                                </p>
+                              </div>
+                              <input
+                                type="radio"
+                                name="audio_preset"
+                                checked={isSelected}
+                                onChange={() => {}}
+                                className="mt-1 text-[#0066FF] focus:ring-[#0066FF]"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Title & Custom Stream Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-slate-700">
+                        {isAr ? "اسم النغمة المعروض في المشغّل" : "Display Title on Player"}
+                      </label>
+                      <input
+                        type="text"
+                        value={profile.backgroundMusicTitle || ""}
+                        placeholder={isAr ? "تقاسيم عود شامي أصيل" : "Damascene Oud Ambience"}
+                        onChange={(e) => setProfile({ ...profile, backgroundMusicTitle: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#0066FF] focus:bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-slate-700">
+                        {isAr ? "رابط صوتي خارجي مخصص (اختياري - MP3)" : "Custom Direct MP3 URL (Optional)"}
+                      </label>
+                      <input
+                        type="url"
+                        value={profile.backgroundMusicUrl || ""}
+                        placeholder="https://example.com/audio.mp3"
+                        onChange={(e) => setProfile({ ...profile, backgroundMusicUrl: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-[#0066FF] focus:bg-white dir-ltr text-left"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Tip & Save */}
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>
+                        {isAr
+                          ? "يتم تحميل ملف الصوت فقط عند نقر الزائر على زر التشغيل لتوفير باقة الإنترنت والسرعة القصوى."
+                          : "Audio loads lazily only when the visitor presses play to ensure maximum load speed."}
+                      </span>
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => saveProfileChanges(profile, true)}
+                      disabled={saving}
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0066FF] hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer shrink-0"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>{saving ? (isAr ? "جاري الحفظ..." : "Saving...") : (isAr ? "حفظ إعدادات النغمة" : "Save Audio Settings")}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -933,6 +1202,19 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Authentication Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md my-8">
+            <DashboardAuth
+              onAuthSuccess={handleAuthSuccess}
+              onDemoLogin={handleDemoLogin}
+              onClose={() => setShowAuthModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

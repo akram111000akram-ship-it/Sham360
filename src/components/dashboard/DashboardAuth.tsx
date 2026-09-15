@@ -16,18 +16,21 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  X
 } from "lucide-react";
 import { Logo } from "../Logo";
 
 interface DashboardAuthProps {
   onAuthSuccess?: () => void;
   onDemoLogin?: () => void;
+  onClose?: () => void;
 }
 
 export const DashboardAuth: React.FC<DashboardAuthProps> = ({
   onAuthSuccess,
-  onDemoLogin
+  onDemoLogin,
+  onClose
 }) => {
   const { isAr, t } = useLanguage();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -103,8 +106,20 @@ export const DashboardAuth: React.FC<DashboardAuthProps> = ({
   return (
     <div
       dir={isAr ? "rtl" : "ltr"}
-      className={`w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xl shadow-slate-100 font-sans ${isAr ? "text-right" : "text-left"}`}
+      className={`relative w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-xl shadow-slate-100 font-sans ${isAr ? "text-right" : "text-left"}`}
     >
+      {/* Close button if rendered as modal */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className={`absolute top-4 ${isAr ? "left-4" : "right-4"} p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer`}
+          title={isAr ? "إغلاق" : "Close"}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
+
       {/* Header Brand */}
       <div className="text-center mb-6">
         <div className="inline-block mb-3">
