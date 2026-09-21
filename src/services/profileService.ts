@@ -172,6 +172,35 @@ export function mapFirestoreToProfileView(docData: FirestoreProfile): Sham360Pro
     backgroundMusicPreset: docData.backgroundMusicPreset || "damascene_oud",
     backgroundMusicUrl: docData.backgroundMusicUrl || "",
     backgroundMusicTitle: docData.backgroundMusicTitle || "",
+    shamCashNumber: docData.shamCashNumber || "",
+    syriatelCashNumber: docData.syriatelCashNumber || "",
+    shamCashQrUrl: docData.shamCashQrUrl || "",
+    syriatelCashQrUrl: docData.syriatelCashQrUrl || "",
+    paymentMethodsEnabled: docData.paymentMethodsEnabled ?? (Boolean(docData.shamCashNumber || docData.syriatelCashNumber || (docData.paymentMethods && docData.paymentMethods.length > 0))),
+    paymentMethods: (docData.paymentMethods && docData.paymentMethods.length > 0)
+      ? docData.paymentMethods
+      : [
+          ...(docData.shamCashNumber ? [{
+            id: "pay_sham_cash",
+            provider: "sham_cash" as const,
+            title: "شام كاش (Sham Cash)",
+            titleEn: "Sham Cash",
+            accountNumber: docData.shamCashNumber,
+            accountName: docData.businessName || docData.name || "",
+            qrCodeUrl: docData.shamCashQrUrl || "",
+            isActive: true
+          }] : []),
+          ...(docData.syriatelCashNumber ? [{
+            id: "pay_syriatel_cash",
+            provider: "syriatel_cash" as const,
+            title: "سيريتل كاش (Syriatel Cash)",
+            titleEn: "Syriatel Cash",
+            accountNumber: docData.syriatelCashNumber,
+            accountName: docData.businessName || docData.name || "",
+            qrCodeUrl: docData.syriatelCashQrUrl || "",
+            isActive: true
+          }] : [])
+        ],
     links: docData.links && docData.links.length > 0
       ? docData.links
       : [
@@ -217,7 +246,7 @@ export async function getProfileBySlug(slug: string): Promise<Sham360ProfileData
 
   // 2. Safe development fallback for sample profiles
   if (!normalizedSlug || normalizedSlug === "profile") {
-    return SAMPLE_PROFILES_REGISTRY["al-yasmeen"] || mockBusinessProfile;
+    return SAMPLE_PROFILES_REGISTRY["akram"] || mockIndividualProfile;
   }
 
   if (SAMPLE_PROFILES_REGISTRY[normalizedSlug]) {

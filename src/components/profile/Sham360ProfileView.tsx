@@ -40,11 +40,13 @@ import {
   ArrowUpRight,
   ArrowLeft,
   ArrowRight,
-  MousePointerClick
+  MousePointerClick,
+  Wallet
 } from "lucide-react";
 import { LogoIcon } from "../Logo";
 import { DamasceneVR360Showcase } from "../DamasceneVR360Showcase";
-import { ProfileAudioPlayer } from "./ProfileAudioPlayer";
+import { ProfileAudioPlayer, AudioPresetType } from "./ProfileAudioPlayer";
+import { SyrianPaymentModal, PaymentMethodItem } from "./SyrianPaymentModal";
 import {
   RealWhatsappIcon,
   RealPhoneIcon,
@@ -145,9 +147,15 @@ export interface Sham360ProfileData {
   directRedirectEnabled?: boolean;
   directRedirectUrl?: string;
   backgroundMusicEnabled?: boolean;
-  backgroundMusicPreset?: "damascene_oud" | "chill_ambient" | "courtyard_fountain" | "soundhelix_ambient" | "custom";
+  backgroundMusicPreset?: AudioPresetType;
   backgroundMusicUrl?: string;
   backgroundMusicTitle?: string;
+  shamCashNumber?: string;
+  syriatelCashNumber?: string;
+  shamCashQrUrl?: string;
+  syriatelCashQrUrl?: string;
+  paymentMethodsEnabled?: boolean;
+  paymentMethods?: PaymentMethodItem[];
 }
 
 export interface Sham360ProfileViewProps {
@@ -439,7 +447,16 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
   const [savedContact, setSavedContact] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [showVrModal, setShowVrModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [copiedPayment, setCopiedPayment] = useState<string | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+
+  const handleCopyPayment = (text: string, provider: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedPayment(provider);
+    setTimeout(() => setCopiedPayment(null), 2500);
+  };
 
   const isBusiness = profile.type === "business";
   const displayName = isAr ? profile.name : (profile.nameEn || profile.name);
@@ -481,6 +498,48 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
   const instagramUrl =
     profile.socialLinks?.instagram || "https://instagram.com/sham360.online";
   const instagramHandle = getInstagramHandle(instagramUrl);
+
+  const hasSyrianPayments =
+    profile.paymentMethodsEnabled !== false &&
+    Boolean(
+      profile.shamCashNumber ||
+      profile.syriatelCashNumber ||
+      (profile.paymentMethods && profile.paymentMethods.length > 0)
+    );
+
+  const synthesizedPaymentMethods: PaymentMethodItem[] =
+    profile.paymentMethods && profile.paymentMethods.length > 0
+      ? profile.paymentMethods
+      : [
+          ...(profile.shamCashNumber
+            ? [
+                {
+                  id: "pay_sham_cash",
+                  provider: "sham_cash" as const,
+                  title: "شام كاش (Sham Cash)",
+                  titleEn: "Sham Cash",
+                  accountNumber: profile.shamCashNumber,
+                  accountName: displayCompany || displayName,
+                  qrCodeUrl: profile.shamCashQrUrl || "",
+                  isActive: true
+                }
+              ]
+            : []),
+          ...(profile.syriatelCashNumber
+            ? [
+                {
+                  id: "pay_syriatel_cash",
+                  provider: "syriatel_cash" as const,
+                  title: "سيريتل كاش (Syriatel Cash)",
+                  titleEn: "Syriatel Cash",
+                  accountNumber: profile.syriatelCashNumber,
+                  accountName: displayCompany || displayName,
+                  qrCodeUrl: profile.syriatelCashQrUrl || "",
+                  isActive: true
+                }
+              ]
+            : [])
+        ];
 
   // Quick Contact Actions Dock (Call, WhatsApp, Email, Website next to each other with Authentic Real Icon View)
   const quickContactActions = [
@@ -1118,6 +1177,121 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
             </motion.button>
           )}
 
+          {/* 8.5 Syrian & Universal Payments & Digital Wallets Card */}
+          {hasSyrianPayments && (
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/70 via-white to-slate-50 border border-emerald-200/80 shadow-2xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    <Wallet className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-900 leading-tight">
+                      {isAr ? "وسائل الدفع والمحافظ الإلكترونية" : "Digital Wallets & Payments"}
+                    </h4>
+                    <span className="text-[10px] text-emerald-700 font-semibold">
+                      {isAr ? "شام كاش • سيريتل • Revolut • Wise • Crypto" : "Sham Cash • Syriatel • Revolut • Wise • Crypto"}
+                    </span>
+                  </div>
+                </div>
+
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  type="button"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="px-2.5 py-1 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                  <span>{isAr ? "رموز QR والحسابات" : "QR & Accounts"}</span>
+                </motion.button>
+              </div>
+
+              {/* Dynamic copy chips for active payment methods */}
+              <div className="grid grid-cols-1 gap-2 pt-1">
+                {synthesizedPaymentMethods
+                  .filter((m) => m.isActive !== false)
+                  .slice(0, 4)
+                  .map((method) => {
+                    const isCopied = copiedPayment === method.id;
+                    const badgeColor =
+                      method.provider === "sham_cash"
+                        ? "bg-emerald-600 text-white"
+                        : method.provider === "syriatel_cash"
+                        ? "bg-red-600 text-white"
+                        : method.provider === "mtn_cash"
+                        ? "bg-amber-600 text-white"
+                        : method.provider === "revolut"
+                        ? "bg-blue-600 text-white"
+                        : method.provider === "wise"
+                        ? "bg-teal-700 text-white"
+                        : method.provider === "crypto"
+                        ? "bg-emerald-700 text-white"
+                        : method.provider === "paypal"
+                        ? "bg-sky-600 text-white"
+                        : "bg-slate-800 text-white";
+
+                    return (
+                      <div
+                        key={method.id}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs hover:border-slate-300 transition-colors"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md font-black text-[9px] shrink-0 uppercase ${badgeColor}`}
+                          >
+                            {isAr
+                              ? method.title || method.provider
+                              : method.titleEn || method.title || method.provider}
+                          </span>
+                          <span
+                            className="font-mono text-xs font-bold text-slate-800 truncate"
+                            dir="ltr"
+                          >
+                            {method.accountNumber}
+                          </span>
+                          {method.currency && (
+                            <span className="text-[9px] font-mono text-slate-400 font-bold">
+                              {method.currency}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPayment(method.accountNumber, method.id)}
+                          className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+                          title={isAr ? "نسخ الرقم أو المعرّف" : "Copy Account/ID"}
+                        >
+                          {isCopied ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span className="text-emerald-700">{isAr ? "تم" : "Copied"}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              <span>{isAr ? "نسخ" : "Copy"}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                {synthesizedPaymentMethods.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="text-center py-1 text-[11px] text-emerald-700 font-bold hover:underline cursor-pointer"
+                  >
+                    {isAr
+                      ? `+ عرض باقي وسائل الدفع (${synthesizedPaymentMethods.length - 4} أخرى)`
+                      : `+ View ${synthesizedPaymentMethods.length - 4} more payment options`}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 9. Dynamic Extended Custom & Document Links (Swiss Minimalist Dark Glassmorphism) */}
           {profile.links && profile.links.length > 0 && (
             <div className="space-y-2 pt-1">
@@ -1132,7 +1306,7 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
                 const finalUrl = normalizeExternalUrl(link.url);
                 const activeIconName = link.iconName || detected.iconName;
 
-                // Dedicated "CV / Document / Portfolio" Button Styling with Dark Glassmorphism
+                // Dedicated "CV / Document / Portfolio" Button Styling (Refined White Luxury Aesthetic)
                 if (isDocOrCv) {
                   return (
                     <motion.a
@@ -1142,34 +1316,34 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
                       href={finalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative overflow-hidden rounded-2xl p-3.5 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white border border-slate-700/60 shadow-md shadow-slate-950/20 backdrop-blur-xl flex items-center justify-between gap-3 group cursor-pointer transition-all duration-200"
+                      className="relative overflow-hidden rounded-2xl p-3.5 bg-white hover:bg-slate-50/90 text-slate-900 border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-sm flex items-center justify-between gap-3 group cursor-pointer transition-all duration-200"
                     >
-                      {/* Ambient Accent Radial Glow */}
+                      {/* Subtle Ambient Accent Tint */}
                       <div
-                        className="absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl opacity-20 pointer-events-none transition-opacity group-hover:opacity-35"
+                        className="absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none transition-opacity group-hover:opacity-20"
                         style={{ backgroundColor: detected.accentColor }}
                       />
                       
                       <div className="flex items-center gap-3.5 min-w-0 relative z-10">
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-md">
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-xs">
                           {renderProfileIcon(activeIconName, "w-10 h-10")}
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[13px] sm:text-sm font-bold text-white group-hover:text-blue-200 transition-colors truncate">
+                            <span className="text-[13px] sm:text-sm font-bold text-slate-900 group-hover:text-[#0066FF] transition-colors truncate">
                               {isAr ? (link.label || detected.defaultTitleAr) : (link.labelEn || link.label || detected.defaultTitleEn)}
                             </span>
                             <span
                               className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0"
                               style={{
                                 backgroundColor: detected.subtleBg,
-                                color: detected.accentColor === "#0F172A" ? "#94A3B8" : detected.accentColor
+                                color: detected.accentColor === "#0F172A" ? "#334155" : detected.accentColor
                               }}
                             >
                               {isAr ? detected.badgeLabelAr : detected.badgeLabelEn}
                             </span>
                           </div>
-                          <span className="text-[11px] text-slate-300 block truncate">
+                          <span className="text-[11px] text-slate-500 block truncate">
                             {isAr
                               ? (link.description || "فتح المستند الرسمي مباشرة في نافذة جديدة")
                               : (link.descriptionEn || link.description || "Open official document in a new tab")}
@@ -1177,7 +1351,7 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="w-8 h-8 rounded-xl bg-white/10 group-hover:bg-white/20 flex items-center justify-center text-white/90 group-hover:text-white transition-colors flex-shrink-0 relative z-10 shadow-xs">
+                      <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center text-slate-400 group-hover:text-[#0066FF] transition-colors flex-shrink-0 relative z-10 shadow-2xs">
                         <ExternalLink className="w-4 h-4" />
                       </div>
                     </motion.a>
@@ -1448,6 +1622,17 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
           )}
         </AnimatePresence>
 
+        {/* Syrian Payment & Digital Wallet Interactive Modal */}
+        <SyrianPaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          methods={synthesizedPaymentMethods}
+          businessName={displayCompany || displayName}
+          whatsappNumber={profile.contactInfo?.whatsapp || profile.socialLinks?.whatsapp}
+          isAr={isAr}
+          primaryColor={activePalette.primary}
+        />
+
         {/* Floating Lightweight Background Music Player */}
         <ProfileAudioPlayer
           enabled={profile.backgroundMusicEnabled}
@@ -1477,6 +1662,9 @@ export const mockIndividualProfile: Sham360ProfileData = {
   backgroundMusicEnabled: true,
   backgroundMusicPreset: "damascene_oud",
   backgroundMusicTitle: "تقاسيم عود شامي أصيل",
+  paymentMethodsEnabled: true,
+  shamCashNumber: "SHAM-908214",
+  syriatelCashNumber: "0933888999",
   jobTitle: "استشاري نظم ذكية وبطاقات NFC المعتمدة",
   jobTitleEn: "Smart NFC Solutions & Digital Identity Consultant",
   companyName: "منظومة شام 360 للحلول الذكية",

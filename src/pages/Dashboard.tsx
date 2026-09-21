@@ -17,6 +17,9 @@ import { updateProfileInSupabase, isSupabaseConfigured } from "../services/supab
 import { FirestoreProfile, Sham360ProfileData } from "../types";
 import { Sham360ProfileView } from "../components/Sham360ProfileView";
 import { DashboardAuth } from "../components/dashboard/DashboardAuth";
+import { ProfileEditor } from "../components/dashboard/ProfileEditor";
+import { SyrianPaymentModal } from "../components/profile/SyrianPaymentModal";
+import { PaymentMethodItem } from "../types/profile";
 import { Logo } from "../components/Logo";
 import {
   User,
@@ -55,12 +58,15 @@ import {
   Music,
   Volume2,
   Play,
-  Pause
+  Pause,
+  Wallet,
+  CreditCard,
+  ArrowLeft
 } from "lucide-react";
 import { AUDIO_PRESETS, AudioPresetType } from "../components/profile/ProfileAudioPlayer";
 
 export const Dashboard: React.FC = () => {
-  const { navigate } = useRouter();
+  const { currentRoute, navigate } = useRouter();
   const { isAr } = useLanguage();
 
   // Authentication State
@@ -68,10 +74,23 @@ export const Dashboard: React.FC = () => {
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [isDemoMode, setIsDemoMode] = useState<boolean>(true); // Default to demo/active edit for immediate preview
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [activationAlert, setActivationAlert] = useState<string | null>(null);
 
-  // Active Tab
-  type DashboardTab = "settings" | "links" | "nfc" | "analytics" | "preview";
-  const [activeTab, setActiveTab] = useState<DashboardTab>("settings");
+  // Active Tab with URL Parameter Support
+  type DashboardTab = "settings" | "links" | "payments" | "editor" | "nfc" | "analytics" | "preview";
+  const [activeTab, setActiveTab] = useState<DashboardTab>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && ["settings", "links", "payments", "editor", "nfc", "analytics", "preview"].includes(tabParam)) {
+        return tabParam as DashboardTab;
+      }
+    }
+    return "settings";
+  });
+
+  // Test Modal State for Payment Methods
+  const [testPaymentModalItem, setTestPaymentModalItem] = useState<PaymentMethodItem | null>(null);
 
   // Profile State
   const [profile, setProfile] = useState<FirestoreProfile>({
@@ -101,6 +120,54 @@ export const Dashboard: React.FC = () => {
     backgroundMusicPreset: "damascene_oud",
     backgroundMusicUrl: "",
     backgroundMusicTitle: "تقاسيم عود شامي أصيل",
+
+    // Universal & Syrian Payment Methods
+    paymentMethodsEnabled: true,
+    shamCashNumber: "SHAM-889921",
+    syriatelCashNumber: "0933888999",
+    paymentMethods: [
+      {
+        id: "pay_sham_cash",
+        provider: "sham_cash",
+        title: "شام كاش (Sham Cash)",
+        titleEn: "Sham Cash",
+        accountNumber: "SHAM-889921",
+        accountName: "م. أكرم دمشقي",
+        currency: "SYP",
+        isActive: true
+      },
+      {
+        id: "pay_syriatel_cash",
+        provider: "syriatel_cash",
+        title: "سيريتل كاش (Syriatel Cash)",
+        titleEn: "Syriatel Cash",
+        accountNumber: "0933888999",
+        accountName: "م. أكرم دمشقي",
+        currency: "SYP",
+        isActive: true
+      },
+      {
+        id: "pay_revolut",
+        provider: "revolut",
+        title: "ريفولوت (Revolut)",
+        titleEn: "Revolut",
+        accountNumber: "@akram360",
+        accountName: "Akram Damascene",
+        currency: "EUR",
+        isActive: true
+      },
+      {
+        id: "pay_usdt",
+        provider: "crypto",
+        title: "USDT (Tether TRC-20)",
+        titleEn: "USDT TRC20",
+        accountNumber: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+        accountName: "Akram TRC20 Wallet",
+        currency: "USDT",
+        instructions: "يرجى التحويل حصراً على شبكة Tron TRC-20",
+        isActive: true
+      }
+    ],
     
     directoryEnabled: true,
     isActive: true,
@@ -150,6 +217,22 @@ export const Dashboard: React.FC = () => {
     let isMounted = true;
     const loadProfileData = async () => {
       try {
+        const targetSlug = currentRoute.params.slug;
+        if (targetSlug) {
+          const matched = await getFirestoreProfileBySlug(targetSlug);
+          if (matched && isMounted) {
+            setProfile(matched);
+            if (currentRoute.params.activated === "true") {
+              setActivationAlert(
+                isAr
+                  ? "🎉 مبروك! تم تفعيل بطاقتك بنجاح بحساب Google. يمكنك الآن تعديل بيانات ملفك وحفظها."
+                  : "🎉 Congratulations! Your NFC card has been linked with your Google account. You can now customize your digital profile."
+              );
+            }
+            return;
+          }
+        }
+
         if (currentUser?.uid) {
           const owned = await getProfilesByOwner(currentUser.uid);
           if (owned && owned.length > 0 && isMounted) {
@@ -168,10 +251,15 @@ export const Dashboard: React.FC = () => {
     };
 
     loadProfileData();
+
+    if (currentRoute.params.edit === "true") {
+      setActiveTab("settings");
+    }
+
     return () => {
       isMounted = false;
     };
-  }, [currentUser]);
+  }, [currentUser, currentRoute.params.slug, currentRoute.params.activated, currentRoute.params.edit, isAr]);
 
   const showToast = (text: string, type: "success" | "error" | "info" = "success") => {
     setToastMessage({ text, type });
@@ -224,6 +312,8 @@ export const Dashboard: React.FC = () => {
   // Universal save handler for profile changes (updates Supabase & Firestore)
   const saveProfileChanges = async (profileDataToSave = profile, notify = true) => {
     setSaving(true);
+    // Keep local state in sync immediately
+    setProfile(profileDataToSave);
     try {
       // 1. Sync to Supabase directly
       const supabaseResult = await updateProfileInSupabase(
@@ -370,7 +460,14 @@ export const Dashboard: React.FC = () => {
       label: l.label,
       url: l.url,
       iconName: l.iconName
-    }))
+    })),
+    // Pass payments data to live preview
+    paymentMethodsEnabled: profile.paymentMethodsEnabled,
+    shamCashNumber: profile.shamCashNumber,
+    syriatelCashNumber: profile.syriatelCashNumber,
+    shamCashQrUrl: profile.shamCashQrUrl,
+    syriatelCashQrUrl: profile.syriatelCashQrUrl,
+    paymentMethods: profile.paymentMethods
   };
 
   return (
@@ -520,7 +617,7 @@ export const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("settings")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === "settings"
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -532,21 +629,51 @@ export const Dashboard: React.FC = () => {
 
           <button
             type="button"
+            onClick={() => setActiveTab("payments")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              activeTab === "payments"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+            <span>
+              {isAr
+                ? `وسائل الدفع والمحافظ (${(profile.paymentMethods?.length || 0) + (profile.shamCashNumber && !profile.paymentMethods?.some(p => p.provider === 'sham_cash') ? 1 : 0) + (profile.syriatelCashNumber && !profile.paymentMethods?.some(p => p.provider === 'syriatel_cash') ? 1 : 0)})`
+                : `Payments (${profile.paymentMethods?.length || 0})`}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("editor")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              activeTab === "editor"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5 text-[#0066FF]" />
+            <span>{isAr ? "محرر الملف الشامل" : "Full Editor"}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("links")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === "links"
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
             }`}
           >
-            <Globe className="w-3.5 h-3.5 text-emerald-600" />
+            <Globe className="w-3.5 h-3.5 text-teal-600" />
             <span>{isAr ? `الروابط والقنوات (${profile.links?.length || 0})` : `Links (${profile.links?.length || 0})`}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("nfc")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === "nfc"
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -559,7 +686,7 @@ export const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === "analytics"
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -572,7 +699,7 @@ export const Dashboard: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("preview")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               activeTab === "preview"
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -581,10 +708,49 @@ export const Dashboard: React.FC = () => {
             <Smartphone className="w-3.5 h-3.5 text-purple-600" />
             <span>{isAr ? "المعاينة التفاعلية" : "Interactive Preview"}</span>
           </button>
+
+          {/* Quick Route to NFC Token Manager without page refresh */}
+          <button
+            type="button"
+            onClick={() => navigate("/admin?tab=tokens")}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer shrink-0 ms-auto"
+            title={isAr ? "مدير بطاقات ورموز NFC" : "NFC Token Manager"}
+          >
+            <CreditCard className="w-3.5 h-3.5 text-amber-600" />
+            <span>{isAr ? "مدير بطاقات NFC" : "NFC Token Manager"}</span>
+          </button>
         </div>
 
+        {/* Activation Success Celebration Banner */}
+        {activationAlert && (
+          <div className="bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-blue-500/10 border border-emerald-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-slate-900">
+                  {activationAlert}
+                </p>
+                <p className="text-[11px] text-slate-600">
+                  {isAr
+                    ? "تم ربط معرّف البطاقة الفيزيائية بحسابك. الملف جاهز الآن للبث والنقر الفوري NFC."
+                    : "Your physical NFC card is linked to your account. Your profile is ready for instant NFC tapping."}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActivationAlert(null)}
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-lg cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Demo Mode / Active Edit Banner with Sign-In CTA */}
-        {!currentUser && isDemoMode && (
+        {!currentUser && isDemoMode && !activationAlert && (
           <div className="bg-gradient-to-r from-blue-50 via-slate-50 to-amber-50 border border-blue-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
@@ -1181,6 +1347,231 @@ export const Dashboard: React.FC = () => {
         )}
 
         {/* =========================================================================
+            TAB: PAYMENTS & WALLETS (UNIVERSAL & SYRIAN METHODS)
+           ========================================================================= */}
+        {activeTab === "payments" && (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            {/* Header / Global Toggle */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    {isAr ? "وسائل الدفع والمحافظ الإلكترونية (Syrian & Universal Wallets)" : "Payment Methods & Digital Wallets"}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 max-w-xl">
+                    {isAr
+                      ? "إدارة المحافظ المحلية السورية (شام كاش، سيريتل كاش) والحسابات العالمية (Revolut, Wise, IBAN, USDT) المعروضة على ملفك."
+                      : "Manage Syrian local wallets (Sham Cash, Syriatel Cash) and global payment options (Revolut, Wise, IBAN, USDT)."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("editor")}
+                  className="px-4 py-2 rounded-xl bg-[#0066FF] hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>{isAr ? "إدارة وتعديل في المحرر" : "Edit in Full Editor"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Syrian Wallets Overview */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>{isAr ? "المحافظ السورية المحلية النشطة" : "Active Syrian Local Wallets"}</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sham Cash Card */}
+                <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40 flex flex-col justify-between gap-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
+                        Syrian Mobile Wallet
+                      </span>
+                      <h5 className="text-sm font-black text-slate-900">شام كاش (Sham Cash)</h5>
+                      <p className="text-xs font-mono font-bold text-emerald-950 mt-1">
+                        {profile.shamCashNumber || "غير محدد"}
+                      </p>
+                    </div>
+                    <span className="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      {profile.shamCashNumber ? "مفعّل" : "غير مدخل"}
+                    </span>
+                  </div>
+
+                  {profile.shamCashNumber && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTestPaymentModalItem({
+                          id: "sham_cash_test",
+                          provider: "sham_cash",
+                          title: "شام كاش (Sham Cash)",
+                          titleEn: "Sham Cash",
+                          accountNumber: profile.shamCashNumber,
+                          accountName: profile.name,
+                          currency: "SYP",
+                          qrCodeUrl: profile.shamCashQrUrl,
+                          isActive: true
+                        })
+                      }
+                      className="w-full py-2 rounded-xl bg-white hover:bg-emerald-100/60 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{isAr ? "تجربة نافذة الدفع كما يراها الزائر" : "Test Visitor Payment Modal"}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Syriatel Cash Card */}
+                <div className="p-4 rounded-2xl border border-red-200 bg-red-50/40 flex flex-col justify-between gap-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold text-red-700 uppercase tracking-wider block">
+                        Syrian GSM Wallet
+                      </span>
+                      <h5 className="text-sm font-black text-slate-900">سيريتل كاش (Syriatel Cash)</h5>
+                      <p className="text-xs font-mono font-bold text-red-950 mt-1">
+                        {profile.syriatelCashNumber || "غير محدد"}
+                      </p>
+                    </div>
+                    <span className="px-2 py-1 rounded-lg bg-red-100 text-red-800 text-[10px] font-bold">
+                      {profile.syriatelCashNumber ? "مفعّل" : "غير مدخل"}
+                    </span>
+                  </div>
+
+                  {profile.syriatelCashNumber && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTestPaymentModalItem({
+                          id: "syriatel_cash_test",
+                          provider: "syriatel_cash",
+                          title: "سيريتل كاش (Syriatel Cash)",
+                          titleEn: "Syriatel Cash",
+                          accountNumber: profile.syriatelCashNumber,
+                          accountName: profile.name,
+                          currency: "SYP",
+                          qrCodeUrl: profile.syriatelCashQrUrl,
+                          isActive: true
+                        })
+                      }
+                      className="w-full py-2 rounded-xl bg-white hover:bg-red-100/60 border border-red-200 text-red-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-red-600" />
+                      <span>{isAr ? "تجربة نافذة الدفع كما يراها الزائر" : "Test Visitor Payment Modal"}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Universal Methods Overview */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <span>{isAr ? "الوسائل العالمية والمخصصة (Revolut, Wise, IBAN, USDT)" : "Universal & Custom Payment Methods"}</span>
+                </h4>
+                <span className="text-xs font-bold text-slate-500">
+                  {profile.paymentMethods?.filter(p => !["sham_cash", "syriatel_cash"].includes(p.provider)).length || 0} {isAr ? "وسيلة" : "methods"}
+                </span>
+              </div>
+
+              {(!profile.paymentMethods || profile.paymentMethods.filter(p => !["sham_cash", "syriatel_cash"].includes(p.provider)).length === 0) ? (
+                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-200 text-center space-y-3">
+                  <CreditCard className="w-8 h-8 text-slate-300 mx-auto" />
+                  <p className="text-xs font-bold text-slate-600">
+                    {isAr ? "لم تقم بإضافة وسائل دفع عالمية بعد" : "No universal payment methods added yet"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("editor")}
+                    className="px-4 py-2 rounded-xl bg-[#0066FF] hover:bg-blue-700 text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>{isAr ? "إضافة وسيلة دفع في المحرر" : "Add Method in Editor"}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {profile.paymentMethods
+                    ?.filter(p => !["sham_cash", "syriatel_cash"].includes(p.provider))
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold uppercase">
+                                {item.provider}
+                              </span>
+                              <span className="text-xs font-bold text-slate-500 font-mono">
+                                {item.currency || "USD"}
+                              </span>
+                            </div>
+                            <h5 className="text-xs sm:text-sm font-black text-slate-900 mt-1">
+                              {item.title}
+                            </h5>
+                            <p className="text-xs font-mono text-slate-700 mt-0.5 truncate max-w-[220px]">
+                              {item.accountNumber}
+                            </p>
+                          </div>
+
+                          {item.qrCodeUrl && (
+                            <img
+                              src={item.qrCodeUrl}
+                              alt={item.title}
+                              className="w-10 h-10 rounded-lg object-contain border border-slate-200 bg-white shrink-0"
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setTestPaymentModalItem(item)}
+                          className="w-full py-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-700 hover:text-[#0066FF] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#0066FF]" />
+                          <span>{isAr ? "تجربة نافذة الدفع للزائر" : "Test Visitor Modal"}</span>
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB: FULL PROFILE EDITOR EMBEDDED
+           ========================================================================= */}
+        {activeTab === "editor" && (
+          <div className="max-w-4xl mx-auto space-y-4">
+            <ProfileEditor
+              initialProfile={profile}
+              onSave={async (updatedProfile) => {
+                await saveProfileChanges(updatedProfile, true);
+              }}
+              saving={saving}
+              onPreviewToggle={() => setActiveTab("preview")}
+              onBack={() => setActiveTab("settings")}
+              onExit={() => setActiveTab("settings")}
+            />
+          </div>
+        )}
+
+        {/* =========================================================================
             TAB 5: LIVE INTERACTIVE PREVIEW
            ========================================================================= */}
         {activeTab === "preview" && (
@@ -1202,6 +1593,16 @@ export const Dashboard: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* Payment Method Test Interactive Modal */}
+      {testPaymentModalItem && (
+        <SyrianPaymentModal
+          isOpen={Boolean(testPaymentModalItem)}
+          onClose={() => setTestPaymentModalItem(null)}
+          paymentMethod={testPaymentModalItem}
+          isAr={isAr}
+        />
+      )}
 
       {/* Authentication Modal */}
       {showAuthModal && (

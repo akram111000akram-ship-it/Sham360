@@ -13,7 +13,9 @@ import {
   X,
   Sparkles,
   ArrowUpRight,
-  UserCheck
+  UserCheck,
+  Zap,
+  ShieldCheck
 } from "lucide-react";
 
 export interface HeaderProps {
@@ -52,9 +54,17 @@ export const Header: React.FC<HeaderProps> = ({ className = "" }) => {
       exact: false
     },
     {
+      id: "activate",
+      labelAr: "تفعيل البطاقة",
+      labelEn: "Activate NFC",
+      path: "/activate",
+      icon: Zap,
+      exact: false
+    },
+    {
       id: "directory",
-      labelAr: "دليل الأعمال",
-      labelEn: "Directory",
+      labelAr: "دليل الأعمال والفعاليات",
+      labelEn: "Directory & Events",
       path: "/directory",
       icon: Compass,
       exact: false

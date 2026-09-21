@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-export type RouteType = "home" | "products" | "profile" | "directory" | "dashboard" | "admin" | "not-found";
+export type RouteType = "home" | "products" | "profile" | "directory" | "dashboard" | "admin" | "activate" | "not-found";
 
 export interface RouteInfo {
   path: string;
@@ -30,7 +30,28 @@ export function parseLocation(pathname: string, search: string = ""): RouteInfo 
     }
   }
 
-  // Public Smart Profile: /profile, /profile/:slug, /p/:slug, or /p
+  // NFC Activation Flow: /activate, /activateCardPage, or /activate/:token
+  if (
+    cleanPath === "/activate" ||
+    cleanPath.startsWith("/activate/") ||
+    cleanPath === "/activateCardPage" ||
+    cleanPath.startsWith("/activateCardPage/")
+  ) {
+    let token = queryParams.token || "";
+    if (cleanPath.startsWith("/activate/")) {
+      token = cleanPath.slice(10).split("/")[0] || token;
+    } else if (cleanPath.startsWith("/activateCardPage/")) {
+      token = cleanPath.slice(18).split("/")[0] || token;
+    }
+    return {
+      path: cleanPath,
+      route: "activate",
+      params: { ...queryParams, token },
+      search
+    };
+  }
+
+  // Public Smart Profile or Card Token: /profile, /profile/:slug, /p/:slugOrToken, or /p
   if (
     cleanPath === "/profile" ||
     cleanPath.startsWith("/profile/") ||
@@ -46,7 +67,7 @@ export function parseLocation(pathname: string, search: string = ""): RouteInfo 
     return {
       path: cleanPath,
       route: "profile",
-      params: { ...queryParams, slug: slug || "al-yasmeen" },
+      params: { ...queryParams, slug: slug || "akram" },
       search
     };
   }

@@ -43,6 +43,8 @@ import {
 import { SyriaInteractiveMap } from "./directory/SyriaInteractiveMap";
 import { DirectoryCard } from "./directory/DirectoryCard";
 import { QrPosterModal } from "./directory/QrPosterModal";
+import { SyrianEventsSection } from "./directory/SyrianEventsSection";
+import { Calendar } from "lucide-react";
 import { useLanguage } from "../services/LanguageContext";
 
 export const Sham360DirectoryView: React.FC = () => {
@@ -52,7 +54,7 @@ export const Sham360DirectoryView: React.FC = () => {
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "map" | "events">("grid");
   const [selectedMapHotspot, setSelectedMapHotspot] = useState<string | null>(null);
 
   // Syria AI Digital Twin & HUD State
@@ -888,8 +890,8 @@ export const Sham360DirectoryView: React.FC = () => {
               )}
             </div>
 
-            {/* View Mode Toggle: Grid vs Authentic Syria Map */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shrink-0">
+            {/* View Mode Toggle: Grid vs Authentic Syria Map vs Events */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shrink-0 overflow-x-auto">
               <button
                 id="view-toggle-grid"
                 type="button"
@@ -897,7 +899,7 @@ export const Sham360DirectoryView: React.FC = () => {
                   setViewMode("grid");
                   setSelectedMapHotspot(null);
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   viewMode === "grid"
                     ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
                     : "text-slate-600 hover:text-slate-900"
@@ -911,14 +913,28 @@ export const Sham360DirectoryView: React.FC = () => {
                 id="view-toggle-map"
                 type="button"
                 onClick={() => setViewMode("map")}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   viewMode === "map"
                     ? "bg-[#0066FF] text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <Map className="w-4 h-4" />
-                <span>{isAr ? "خريطة سوريا التفاعلية 📍" : "Syria Vector Map 📍"}</span>
+                <span>{isAr ? "خريطة سوريا 📍" : "Syria Map 📍"}</span>
+              </button>
+
+              <button
+                id="view-toggle-events"
+                type="button"
+                onClick={() => setViewMode("events")}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  viewMode === "events"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>{isAr ? "الفعاليات 2026 🎉" : "Events 2026 🎉"}</span>
               </button>
             </div>
           </div>
@@ -990,9 +1006,11 @@ export const Sham360DirectoryView: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. Main Body: Grid View vs Interactive Spatially Accurate Map View */}
+      {/* 4. Main Body: Grid View vs Interactive Spatially Accurate Map View vs Events */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-        {viewMode === "grid" ? (
+        {viewMode === "events" ? (
+          <SyrianEventsSection />
+        ) : viewMode === "grid" ? (
           /* =================== GRID VIEW =================== */
           <div>
             {/* Counter Bar */}
@@ -1094,34 +1112,35 @@ export const Sham360DirectoryView: React.FC = () => {
         )}
       </main>
 
-      {/* 5. High-Converting Call-to-Action (CTA) Join Banner */}
+      {/* 5. High-Converting Call-to-Action (CTA) Join Banner - Refined Brand Colors & NFC Verification */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
-        <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 border border-slate-800 p-8 sm:p-12 text-white shadow-2xl shadow-blue-950/40">
-          {/* Subtle Ambient Glows */}
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-[#0066FF]/20 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-cyan-400/10 blur-3xl pointer-events-none" />
+        <div className="relative rounded-[32px] overflow-hidden bg-white border border-slate-200/90 p-8 sm:p-12 text-slate-900 shadow-xl shadow-blue-500/5">
+          {/* Subtle Ambient Brand Glows */}
+          <div className="absolute top-0 end-0 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 start-0 w-80 h-80 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-[#0066FF] via-blue-500 to-sky-400" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-            <div className="max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 text-cyan-300 text-xs font-bold border border-blue-500/30">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="max-w-2xl space-y-3.5">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#0066FF] text-xs font-bold border border-blue-200/80 shadow-2xs">
+                <Radio className="w-3.5 h-3.5 text-[#0066FF]" />
                 <span>
                   {isAr
-                    ? "انضم مجاناً إلى دليل الأعمال والآثار الوطني السوري"
-                    : "Join Syria's National Business & Cultural Directory"}
+                    ? "توثيق المنشآت عبر منتجات وبطاقات SHAM360 NFC الذكية"
+                    : "Business Listing via SHAM360 Smart NFC Products"}
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-950 leading-tight tracking-tight">
                 {isAr
-                  ? "هل تملك منشأة، مطعماً، متحفاً، أو عيادة في سوريا؟"
-                  : "Own a business, restaurant, museum, or clinic in Syria?"}
+                  ? "هل تملك منشأة، متجراً، مطعماً، أو عيادة في سوريا؟"
+                  : "Own a business, restaurant, clinic, or enterprise in Syria?"}
               </h2>
 
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+              <p className="text-xs sm:text-sm sm:leading-relaxed text-slate-600 font-medium">
                 {isAr
-                  ? "اربط نشاطك بمنظومة SHAM360 المتكاملة: احصل على بطاقاتك الذكية الفاخرة، وثّق بروفايلك الرقمي مع حجز المواعيد وتحميل جهة الاتصال الفوري، واطلب تصوير جولة 360° بانورامية بدقة 8K لموقعك."
-                  : "Connect your enterprise to the SHAM360 smart ecosystem: obtain luxury NFC cards, verify your interactive profile with instant vCard saving, and book an 8K 360° virtual tour for your premises."}
+                  ? "يمكن لجميع أصحاب المنشآت والأنشطة التجارية تفعيل وإدراج بروفايلهم الرقمي الموثق في دليل شام 360 فور اقتنائهم أي من منتجات وبطاقات SHAM360 الذكية (NFC). اربط بطاقتك الذكية، وثّق بياناتك الرسمية، واستقبل عملاءك مع حفظ فوري لجهات الاتصال والموقع الجغرافي."
+                  : "Business owners and professionals can activate and feature their verified profile in the SHAM360 directory upon acquiring any SHAM360 NFC smart product (smart cards, counter stands, or digital tags). Connect your smart card, verify your official credentials, and share your identity instantly."}
               </p>
             </div>
 
@@ -1130,21 +1149,21 @@ export const Sham360DirectoryView: React.FC = () => {
                 id="cta-join-directory-btn"
                 type="button"
                 onClick={() => navigate("/dashboard")}
-                className="px-7 py-3.5 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                className="px-6 py-3.5 rounded-2xl bg-[#0066FF] hover:bg-blue-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Zap className="w-4 h-4" />
-                <span>{isAr ? "إدراج منشأتك مجاناً الآن" : "Add Your Listing Free Now"}</span>
+                <span>{isAr ? "ربط وتفعيل المنشأة عبر NFC" : "Activate Profile with NFC"}</span>
               </button>
 
               <a
                 id="cta-whatsapp-team-btn"
-                href="https://wa.me/963933888999?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D9%84%D8%A7%D9%86%D8%B6%D9%85%D8%A7%D9%85%20%D9%84%D8%AF%D9%84%D9%8A%D9%84%20SHAM360%20%D9%88%D8%B7%D9%84%D8%A8%20%D8%B2%D9%8A%D8%A7%D8%B1%D8%A9%20%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%AA%D8%B5%D9%88%D9%8A%D8%B1%208K"
+                href="https://wa.me/963933888999?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%B7%D9%84%D8%A8%20%D9%85%D9%86%D8%AA%D8%AC%D8%A7%D8%AA%20SHAM360%20NFC%20%D9%88%D8%AA%D9%81%D8%B9%D9%8A%D9%84%20%D8%A8%D8%B1%D9%88%D9%81%D8%A7%D9%8A%D9%84%20%D9%85%D9%86%D8%B4%D8%A3%D8%AA%D9%8A"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs sm:text-sm font-bold backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="px-6 py-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200/90 text-xs sm:text-sm font-bold shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
-                <Phone className="w-4 h-4 text-emerald-400" />
-                <span>{isAr ? "طلب زيارة فريق التصوير 8K" : "Request 8K VR Photography Visit"}</span>
+                <Phone className="w-4 h-4 text-[#0066FF]" />
+                <span>{isAr ? "طلب بطاقات ومنتجات NFC الذكية" : "Order SHAM360 NFC Products"}</span>
               </a>
             </div>
           </div>

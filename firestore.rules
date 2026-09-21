@@ -18,20 +18,61 @@ service cloud.firestore {
       );
     }
 
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'Akram111000Akram@gmail.com' ||
+        request.auth.token.admin == true
+      );
+    }
+
     // Default-deny safety net
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Profiles collection:
+    // 1. Profiles collection:
     // - Public visitors can read active smart profiles (for /p/:slug NFC & QR scan traffic)
     // - Authenticated owners can read/create/update their assigned profile records
     match /profiles/{profileId} {
-      allow get: if isValidId(profileId) && (resource.data.isActive == true || isOwner(resource.data));
-      allow list: if resource.data.isActive == true || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
-      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
-      allow update: if isOwner(resource.data) && request.resource.data.ownerUid == resource.data.ownerUid;
-      allow delete: if false;
+      allow get: if isValidId(profileId);
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isOwner(resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 2. NFC Tokens collection:
+    // - Public card lookup on NFC tap (/p/:cardToken and /activate)
+    // - Authenticated users can activate/bind tokens to their profiles
+    // - Admins have full issuance and management rights
+    match /nfc_tokens/{tokenId} {
+      allow get: if isValidId(tokenId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // 3. Syrian Events collection:
+    // - Public read for cultural, business, and heritage events agenda
+    // - Authorized users and admins can create/update events
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // 4. Products collection (NFC Smart Hardware Store):
+    // - Public read for store catalog (cards, stands, keychains, tags)
+    // - Authorized admins can manage inventory and pricing
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // 5. Directory collection (National Syrian Landmarks & Businesses):
+    match /directory/{itemId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
   }
 }

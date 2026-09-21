@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 // Firebase client configuration from Vite environment variables
 const firebaseConfig = {
@@ -25,18 +26,27 @@ export const isFirebaseConfigured: boolean = Boolean(
 let app: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
+let firebaseStorage: FirebaseStorage | null = null;
 
 if (isFirebaseConfigured) {
   try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     firestoreDb = getFirestore(app);
     firebaseAuth = getAuth(app);
-    console.info("[SHAM360] Firebase Firestore & Auth initialized successfully.");
+    if (firebaseConfig.storageBucket) {
+      try {
+        firebaseStorage = getStorage(app);
+      } catch (storageErr) {
+        console.warn("[SHAM360] Storage init warning:", storageErr);
+      }
+    }
+    console.info("[SHAM360] Firebase Firestore, Auth & Storage initialized successfully.");
   } catch (error) {
     console.error("[SHAM360] Firebase initialization failed:", error);
     app = null;
     firestoreDb = null;
     firebaseAuth = null;
+    firebaseStorage = null;
   }
 } else {
   console.info(
@@ -47,3 +57,4 @@ if (isFirebaseConfigured) {
 export const firebaseApp = app;
 export const db = firestoreDb;
 export const auth = firebaseAuth;
+export const storage = firebaseStorage;

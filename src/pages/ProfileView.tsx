@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "../services/router";
 import { getProfileBySlug } from "../services/profileService";
+import { lookupNFCToken, isNFCTokenIdentifier } from "../services/nfcTokenService";
 import { Sham360ProfileView, Sham360ProfileData } from "../components/Sham360ProfileView";
 import {
   ArrowLeft,
@@ -39,11 +40,11 @@ interface ProfileViewProps {
   previewModeProp?: boolean;
 }
 
-// Curated Syrian Smart Profiles for test switching
+// Curated Syrian Smart Profiles for test switching (Akram as primary spotlight profile)
 const CURATED_SMART_PROFILES = [
-  { slug: "national-museum-damascus", labelAr: "متحف دمشق الوطني", labelEn: "Damascus National Museum", icon: "🏛️", tagAr: "تراث وثقافة" },
+  { slug: "akram", labelAr: "م. أكرم دمشقي (الهوية الذكية)", labelEn: "Eng. Akram (Smart Identity)", icon: "👨‍💻", tagAr: "هندسة ذكية" },
   { slug: "al-yasmeen", labelAr: "مطعم وبيت الياسمين", labelEn: "Al-Yasmeen Palace", icon: "🍽️", tagAr: "ضيافة شامية" },
-  { slug: "akram", labelAr: "م. أكرم دمشقي (IoT & AI)", labelEn: "Eng. Akram (IoT & AI)", icon: "👨‍💻", tagAr: "هندسة ذكية" },
+  { slug: "national-museum-damascus", labelAr: "متحف دمشق الوطني", labelEn: "Damascus National Museum", icon: "🏛️", tagAr: "تراث وثقافة" },
   { slug: "dr-khalid-cardiology", labelAr: "د. خالد النحاس (أمراض قلب)", labelEn: "Dr. Khalid (Cardiology)", icon: "🩺", tagAr: "نخبة طبية" },
   { slug: "naranj-restaurant", labelAr: "مطعم النارنج الدمشقي", labelEn: "Naranj Restaurant", icon: "🌸", tagAr: "دمشق القديمة" },
   { slug: "al-sham-technology", labelAr: "مؤسسة شام 360 للتقنيات", labelEn: "Sham360 Technologies", icon: "🏢", tagAr: "حلول رقمية" },
@@ -52,10 +53,10 @@ const CURATED_SMART_PROFILES = [
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewModeProp }) => {
   const { currentRoute, navigate } = useRouter();
-  const slug = slugOverride || currentRoute.params.slug || "al-yasmeen";
+  const slug = slugOverride || currentRoute.params.slug || "akram";
   const [profile, setProfile] = useState<Sham360ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isAr } = useLanguage();
+  const { isAr, toggleLanguage } = useLanguage();
 
   // Smart UI Controls
   const [previewDeviceMode, setPreviewDeviceMode] = useState<"phone" | "card">("phone");
@@ -87,7 +88,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewM
     let isMounted = true;
     setLoading(true);
 
-    getProfileBySlug(slug).then((data) => {
+    async function loadTargetProfile() {
+      let resolvedSlug = slug;
+
+      // Check if the identifier is an NFC card token (e.g. sham_a8f9b1c2d3)
+      if (isNFCTokenIdentifier(slug)) {
+        const token = await lookupNFCToken(slug);
+        if (token) {
+          if (token.status === "unassigned" || !token.profileId) {
+            // Unregistered token - redirect directly to secure activation flow!
+            navigate(`/activateCardPage?token=${encodeURIComponent(token.token)}`);
+            return;
+          } else if (token.profileSlug || token.profileId) {
+            resolvedSlug = token.profileSlug || token.profileId;
+          }
+        } else {
+          // Hardware token not in DB yet - redirect to activateCardPage for Google binding
+          navigate(`/activateCardPage?token=${encodeURIComponent(slug)}`);
+          return;
+        }
+      }
+
+      const data = await getProfileBySlug(resolvedSlug);
       if (!isMounted) return;
       setProfile(data);
       setLoading(false);
@@ -117,7 +139,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewM
           }, 400);
         }
       }
-    });
+    }
+
+    loadTargetProfile();
 
     return () => {
       isMounted = false;
@@ -125,7 +149,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewM
         clearTimeout(redirectTimerRef.current);
       }
     };
-  }, [slug, isPreviewMode, isRedirectCancelled]);
+  }, [slug, isPreviewMode, isRedirectCancelled, navigate]);
 
   // Cancel redirect and remain on full profile preview
   const handleCancelRedirect = () => {
@@ -405,6 +429,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewM
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => navigate("/dashboard")}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              title={isAr ? "لوحة التحكم" : "Dashboard"}
+            >
+              <Sliders className="w-3.5 h-3.5 text-[#0066FF]" />
+              <span className="hidden sm:inline">{isAr ? "لوحة التحكم" : "Dashboard"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/directory")}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              title={isAr ? "دليل الأعمال" : "Directory"}
+            >
+              <Compass className="w-3.5 h-3.5 text-teal-600" />
+              <span className="hidden sm:inline">{isAr ? "الدليل" : "Directory"}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => handleCopyLink(hasDirectRedirect)}
               className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
               title={isAr ? "نسخ رابط الملف" : "Copy Profile Link"}
@@ -429,6 +473,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ slugOverride, previewM
             >
               <Download className="w-3.5 h-3.5 text-slate-600" />
               <span>{isAr ? "تحميل vCard" : "vCard"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              title={isAr ? "Switch to English" : "التبديل إلى العربية"}
+            >
+              <Globe className="w-3.5 h-3.5 text-[#0066FF]" />
+              <span>{isAr ? "English" : "العربية"}</span>
             </button>
           </div>
         </div>

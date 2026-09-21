@@ -45,6 +45,7 @@ import { Logo } from "./Logo";
 import { Sham360OfficialCard, CardMaterialTheme } from "./card/Sham360OfficialCard";
 import { HeroNFCTapSimulation } from "./HeroNFCTapSimulation";
 import { Sham360HeroNFCExperience } from "./Sham360HeroNFCExperience";
+import { Footer } from "./Footer";
 import cardOnStandImg from "../assets/images/sham360_card_on_stand_1788910850957.jpg";
 import officialSmartCardImg from "../assets/images/sham360_official_smart_card_1788815373165.jpg";
 import mirrorSmartCardImg from "../assets/images/sham360_mirror_smart_card_1788907318921.jpg";
@@ -652,7 +653,7 @@ export const Sham360HomePage: React.FC<{
                 {isAr ? (
                   <>
                     <span className="block text-slate-900 font-extrabold mb-1.5 sm:mb-2 text-2xl sm:text-4xl lg:text-[44px]">
-                      بطاقات الأعمال الذكية ⚡
+                      منتجات وبطاقات الهوية الذكية ⚡
                     </span>
                     <span className="text-slate-950">وحضورك الرقمي </span>
                     <span className="relative inline-block text-[#0066FF] whitespace-nowrap">
@@ -676,7 +677,7 @@ export const Sham360HomePage: React.FC<{
                 ) : (
                   <>
                     <span className="block text-slate-900 font-extrabold mb-1.5 sm:mb-2 text-2xl sm:text-4xl lg:text-[44px]">
-                      Next-Gen Smart NFC Cards ⚡
+                      Smart NFC Hardware & Cards ⚡
                     </span>
                     <span className="text-slate-950">& Verified </span>
                     <span className="relative inline-block text-[#0066FF] whitespace-nowrap">
@@ -700,20 +701,36 @@ export const Sham360HomePage: React.FC<{
                 )}
               </h1>
 
-              {/* Subtitle */}
+              {/* Subtitle - Inclusive of all SHAM360 NFC products & payment methods integration */}
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl font-normal">
                 {isAr ? (
                   <>
-                    اجمع بين بطاقات الأعمال الفيزيائية الفاخرة المجهزة بتقنية النقر الفوري{" "}
-                    <span className="font-semibold text-slate-900">NFC</span>، وملف رقمي تفاعلي
-                    بمعايير سويسرية يتيح للعملاء حفظ رقمك وبياناتك وموقعك ومراجعات جوجل بنقرة واحدة،
-                    دون الحاجة لأي تطبيق على هواتفهم.
+                    اربط{" "}
+                    <strong className="font-bold text-slate-950">
+                      أي من منتجات SHAM360 الذكية
+                    </strong>{" "}
+                    (البطاقات الفاخرة، ستاندات المكاتب والمطاعم، أو ملصقات وميداليات{" "}
+                    <span className="font-bold text-[#0066FF]">NFC</span>) بملف رقمي موثق
+                    بمعايير سويسرية. أضف{" "}
+                    <span className="inline-flex items-center font-semibold text-[#0066FF] bg-blue-50/90 px-2 py-0.5 rounded-md border border-blue-200/80 mx-0.5">
+                      طرق الدفع وحساباتك البنكية
+                    </span>
+                    ، أرقام التواصل، موقعك الجغرافي، ومراجعات جوجل، ليمسحها عملاؤك بنقرة هاتف واحدة
+                    فورية دون الحاجة لأي تطبيق.
                   </>
                 ) : (
                   <>
-                    Merge premium physical business cards equipped with instant contactless{" "}
-                    <span className="font-semibold text-slate-900">NFC</span> with a Swiss-standard interactive
-                    digital profile. Empower clients to save your contacts, location, and Google Reviews in one tap—with zero app downloads.
+                    Connect{" "}
+                    <strong className="font-bold text-slate-950">
+                      any SHAM360 smart product
+                    </strong>{" "}
+                    (luxury NFC cards, counter & table stands, key fobs, or smart tags) to your
+                    verified Swiss-standard digital profile. Add your{" "}
+                    <span className="inline-flex items-center font-semibold text-[#0066FF] bg-blue-50/90 px-2 py-0.5 rounded-md border border-blue-200/80 mx-0.5">
+                      payment methods & bank details
+                    </span>
+                    , contact channels, GPS location, and Google reviews—allowing clients to connect
+                    and pay in one instant contactless tap, with zero apps required.
                   </>
                 )}
               </p>
@@ -1391,8 +1408,8 @@ export const Sham360HomePage: React.FC<{
               </h2>
               <p className="text-sm text-slate-600 leading-relaxed">
                 {isAr
-                  ? "استكشف نخبة من الشركات ورواد الأعمال الذين وثقوا حضورهم الرقمي عبر بطاقات SHAM360."
-                  : "Explore leading companies and professionals who have verified their digital presence with SHAM360 Smart Cards."}
+                  ? "استكشف نخبة من الشركات والمهنيين الذين وثقوا حضورهم الرقمي عبر منتجات وبطاقات SHAM360 الذكية (NFC)."
+                  : "Explore leading companies and professionals who have verified their digital presence with SHAM360 Smart NFC Products."}
               </p>
             </div>
 
@@ -1433,196 +1450,15 @@ export const Sham360HomePage: React.FC<{
 
       {/* -----------------------------------------------------------------
           SECTION 6: ENHANCED LIGHT BRAND FOOTER
-          - Clean Swiss minimalist aesthetic matching website identity
+          - Balanced 4-column layout including Legal & Policies (Privacy, Terms, Guarantee)
           - Official contacts: Fakhri Al Baroudi St, admin@sham360.online, +963 933 888 999
-          - Verified social links: Facebook & Instagram
-          - Unified WhatsApp routing
+          - Interactive on-page bilingual policy modals
          ----------------------------------------------------------------- */}
-      <footer className="bg-gradient-to-b from-slate-50/90 via-white to-slate-100/75 text-slate-700 border-t border-slate-200/90 py-12 sm:py-16 text-start relative overflow-hidden">
-        {/* Subtle decorative top brand accent line */}
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#0066FF]/35 to-transparent" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10">
-            {/* Column 1: Brand Info & Socials */}
-            <div className="md:col-span-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <Logo iconSize={42} light={false} isAr={isAr} />
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed max-w-sm">
-                {isAr
-                  ? "المنظومة السورية الأولى لبطاقات الأعمال الذكية وحلول النقر الفوري NFC المصممة وفق أعلى معايير الدقة السويسرية لربط عالم الأعمال المادي بالرقمي."
-                  : "The premier Syrian smart business card and instant contactless NFC solution, engineered with Swiss precision standards to bridge physical and digital networking."}
-              </p>
-
-              {/* Syrian Coverage Badge */}
-              <div className="inline-flex items-center gap-2 p-2.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs text-xs text-slate-700">
-                <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                <span className="text-[11px] font-medium">
-                  {isAr
-                    ? "توصيل سريع: دمشق، حلب، حمص، حماة، اللاذقية، طرطوس، والسويداء"
-                    : "Fast delivery: Damascus, Aleppo, Homs, Hama, Latakia, Tartus, and As-Suwayda"}
-                </span>
-              </div>
-
-              {/* Official Social Links */}
-              <div className="pt-2 flex items-center gap-2.5">
-                <a
-                  href="https://www.facebook.com/share/1Bajy1PRR6/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-blue-50 border border-slate-200/90 hover:border-blue-400 text-slate-600 hover:text-[#1877F2] flex items-center justify-center transition-all shadow-2xs hover:shadow-xs cursor-pointer group"
-                >
-                  <Facebook className="w-4 h-4 transition-transform group-hover:scale-110" />
-                </a>
-                <a
-                  href="https://www.instagram.com/sham360.online?utm_source=qr&stkn=MTVjOTVrZjBpdnczNg=="
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-pink-50 border border-slate-200/90 hover:border-pink-400 text-slate-600 hover:text-[#E4405F] flex items-center justify-center transition-all shadow-2xs hover:shadow-xs cursor-pointer group"
-                >
-                  <Instagram className="w-4 h-4 transition-transform group-hover:scale-110" />
-                </a>
-                <a
-                  href={getWhatsAppOrderUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="WhatsApp"
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200/90 hover:border-emerald-400 text-slate-600 hover:text-emerald-600 flex items-center justify-center transition-all shadow-2xs hover:shadow-xs cursor-pointer group"
-                >
-                  <MessageCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
-                </a>
-                <a
-                  href="mailto:admin@sham360.online"
-                  aria-label="Email"
-                  className="w-9 h-9 rounded-xl bg-white hover:bg-blue-50 border border-slate-200/90 hover:border-blue-400 text-slate-600 hover:text-[#0066FF] flex items-center justify-center transition-all shadow-2xs hover:shadow-xs cursor-pointer group"
-                >
-                  <Mail className="w-4 h-4 transition-transform group-hover:scale-110" />
-                </a>
-              </div>
-            </div>
-
-            {/* Column 2: Quick Links */}
-            <div className="md:col-span-3 space-y-3">
-              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                {isAr ? "روابط سريعة" : "Quick Links"}
-              </h4>
-              <ul className="space-y-2.5 text-xs text-slate-600">
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("hero")}
-                    className="hover:text-[#0066FF] font-medium transition-colors cursor-pointer text-start"
-                  >
-                    {isAr ? "الصفحة الرئيسية" : "Home"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("hardware")}
-                    className="hover:text-[#0066FF] font-medium transition-colors cursor-pointer text-start"
-                  >
-                    {isAr ? "منتجات وبطاقات NFC" : "NFC Hardware & Cards"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection("how-it-works")}
-                    className="hover:text-[#0066FF] font-medium transition-colors cursor-pointer text-start"
-                  >
-                    {isAr ? "كيف تعمل المنظومة" : "How It Works"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onNavigateToDirectory) onNavigateToDirectory();
-                      else scrollToSection("directory");
-                    }}
-                    className="hover:text-[#0066FF] font-medium transition-colors cursor-pointer text-start"
-                  >
-                    {isAr ? "دليل الأعمال الموثق" : "Verified Directory"}
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 3: Contact & Order Desk */}
-            <div className="md:col-span-4 space-y-3.5">
-              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                {isAr ? "مكتب الطلبات والاستفسار" : "Orders & Support Desk"}
-              </h4>
-              <div className="space-y-3 text-xs text-slate-600">
-                <a
-                  href="tel:+963933888999"
-                  className="flex items-center gap-2.5 text-slate-700 hover:text-[#0066FF] font-semibold transition-colors group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0066FF] flex items-center justify-center shrink-0 group-hover:bg-[#0066FF] group-hover:text-white transition-colors">
-                    <Phone className="w-3.5 h-3.5" />
-                  </div>
-                  <span dir="ltr">+963 933 888 999</span>
-                </a>
-
-                <a
-                  href={getWhatsAppOrderUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 text-slate-700 hover:text-emerald-600 font-semibold transition-colors group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                  </div>
-                  <span>{isAr ? "واتساب خدمة العملاء (+963 933 888 999)" : "WhatsApp Support (+963 933 888 999)"}</span>
-                </a>
-
-                <a
-                  href="mailto:admin@sham360.online"
-                  className="flex items-center gap-2.5 text-slate-700 hover:text-[#0066FF] font-semibold transition-colors group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0066FF] flex items-center justify-center shrink-0 group-hover:bg-[#0066FF] group-hover:text-white transition-colors">
-                    <Mail className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="font-mono text-[11.5px]">admin@sham360.online</span>
-                </a>
-
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <MapPin className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="leading-snug font-medium">
-                    {isAr
-                      ? "شارع فخري البارودي، دمشق، الجمهورية العربية السورية"
-                      : "Fakhri Al Baroudi St, Damascus, Syria"}
-                  </span>
-                </div>
-
-                <div className="pt-2">
-                  <a
-                    href={getWhatsAppOrderUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5 text-white" />
-                    <span>{isAr ? "تواصل عبر واتساب (+963 933 888 999)" : "Chat on WhatsApp (+963 933 888 999)"}</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Copyright */}
-          <div className="pt-8 border-t border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-            <p>{isAr ? "جميع الحقوق محفوظة © SHAM360 - 2026. تصميم سويسري مبسط بمعايير عالمية." : "All rights reserved © SHAM360 - 2026. Swiss precision standards."}</p>
-            <p className="font-mono text-slate-500 font-medium">Fakhri Al Baroudi St, Damascus • Built with NFC Excellence</p>
-          </div>
-        </div>
-      </footer>
+      <Footer
+        onNavigateToDirectory={onNavigateToDirectory}
+        onNavigateToProfile={onNavigateToProfile}
+        scrollToSection={scrollToSection}
+      />
     </div>
   );
 };

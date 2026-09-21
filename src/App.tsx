@@ -8,6 +8,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { DirectoryPage } from "./pages/DirectoryPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AdminPage } from "./pages/AdminPage";
+import { ActivateCardPage } from "./pages/ActivateCardPage";
 
 function AppContent() {
   const { currentRoute } = useRouter();
@@ -18,6 +19,8 @@ function AppContent() {
         return <ProductsPage />;
       case "profile":
         return <ProfilePage />;
+      case "activate":
+        return <ActivateCardPage />;
       case "directory":
         return <DirectoryPage />;
       case "dashboard":
