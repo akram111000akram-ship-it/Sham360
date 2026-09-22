@@ -96,12 +96,166 @@
         }
       },
       "required": ["id", "slug", "profileType", "name", "isActive", "directoryEnabled"]
+    },
+    "NFCToken": {
+      "title": "NFCToken",
+      "description": "Cryptographic NFC card hardware token mapped to an owner profile.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique NFC hardware token string (e.g., 'sham_a8f9b1c2d3')."
+        },
+        "token": {
+          "type": "string",
+          "description": "Token string identifier."
+        },
+        "pinHash": {
+          "type": "string",
+          "description": "Hashed or encrypted security PIN."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["unassigned", "active", "suspended", "revoked"],
+          "description": "Lifecycle state of the card."
+        },
+        "cardType": {
+          "type": "string",
+          "enum": ["metal", "wood", "mirror", "pvc_matte", "bamboo", "epoxy_tag"],
+          "description": "Physical material and finish."
+        },
+        "batchNumber": {
+          "type": "string",
+          "description": "Production batch number."
+        },
+        "profileId": {
+          "type": "string",
+          "description": "Associated profile ID."
+        },
+        "profileSlug": {
+          "type": "string",
+          "description": "Associated public profile slug."
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner."
+        },
+        "ownerEmail": {
+          "type": "string",
+          "description": "Owner Google/Email address."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Administrative notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of token creation."
+        },
+        "activatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of token activation."
+        }
+      },
+      "required": ["id", "token", "status", "cardType", "createdAt"]
+    },
+    "DirectoryItem": {
+      "title": "DirectoryItem",
+      "description": "National Syrian business or cultural heritage landmark listing.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique directory item ID."
+        },
+        "slug": {
+          "type": "string",
+          "description": "SEO slug for the directory item."
+        },
+        "nameAr": {
+          "type": "string",
+          "description": "Arabic title or landmark name."
+        },
+        "nameEn": {
+          "type": "string",
+          "description": "English name."
+        },
+        "titleAr": {
+          "type": "string",
+          "description": "Arabic subtitle or category description."
+        },
+        "titleEn": {
+          "type": "string",
+          "description": "English subtitle."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category slug."
+        },
+        "categoryLabelAr": {
+          "type": "string",
+          "description": "Arabic category badge label."
+        },
+        "cityAr": {
+          "type": "string",
+          "description": "Syrian governorate or city name in Arabic."
+        },
+        "cityEn": {
+          "type": "string",
+          "description": "City name in English."
+        },
+        "addressAr": {
+          "type": "string",
+          "description": "Physical address."
+        },
+        "googleMapsUrl": {
+          "type": "string",
+          "description": "Navigation link."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Thumbnail or logo image URL."
+        },
+        "coverUrl": {
+          "type": "string",
+          "description": "Header cover image URL."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Customer rating out of 5."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Telephone number."
+        },
+        "whatsapp": {
+          "type": "string",
+          "description": "WhatsApp contact."
+        },
+        "bioAr": {
+          "type": "string",
+          "description": "Full description."
+        },
+        "mapPinId": {
+          "type": "string",
+          "description": "City map pin identifier."
+        }
+      },
+      "required": ["id", "slug", "nameAr", "category", "cityAr"]
     }
   },
   "firestore": {
     "/profiles/{profileId}": {
       "schema": "Profile",
       "description": "Smart profile records accessed by public slug."
+    },
+    "/nfc_tokens/{tokenId}": {
+      "schema": "NFCToken",
+      "description": "Physical NFC smart card hardware token records."
+    },
+    "/directory/{itemId}": {
+      "schema": "DirectoryItem",
+      "description": "National Syrian business and heritage landmark listings."
     }
   }
 }

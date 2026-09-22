@@ -78,7 +78,7 @@ const SYRIAN_GUIDE_INDUSTRIES: Record<string, KeywordMap> = {
     secondaryCategoriesEn: ["Serviced Apartments", "Beach Resort", "Heritage Boutique Hotel"],
     keywords: ["أفضل فنادق دمشق القديمة", "شقق فندقية المزة اتستراد", "فندق 5 نجوم دمشق", "حجز منتجع اللاذقية"],
     keywordsEn: ["Best Hotels Old Damascus", "Hotel Apartments Mazzeh", "5 Star Hotel Damascus", "Resort Booking Latakia"],
-    tips: "خرائط Google توفر ميزات عرض أسعار الغرف والخدمات المتاحة للفنادق. تأكد من تفعيل جولة 360° للغرف والبهو الرئيسي لتصدّر نتائج البحث المحلية.",
+    tips: "خرائط Google توفر ميزات عرض تفاصيل الغرف والخدمات المتاحة للفنادق. تأكد من تفعيل جولة 360° للغرف والبهو الرئيسي لتصدّر نتائج البحث المحلية.",
     tipsEn: "Enable 360° walk-throughs of suites and lobby areas to top local organic hotel search results."
   },
   "محلات تجارية ومعارض": {
@@ -90,8 +90,8 @@ const SYRIAN_GUIDE_INDUSTRIES: Record<string, KeywordMap> = {
     secondaryCategoriesEn: ["Clothing Showroom", "Electronics & Smart Devices", "Supermarket / Grocery"],
     keywords: ["محل ألبسة نسائية الشعلان", "أجهزة كهربائية بالتقسيط دمشق", "محل جوالات المزة", "سوبرماركت توصيل منزلي"],
     keywordsEn: ["Womenswear Shaalan", "Home Appliances Damascus", "Mobile Phone Store Mazzeh", "Supermarket Home Delivery"],
-    tips: "قم بتفعيل ميزة الرسائل المباشرة في خريطتك لتستقبل استفسارات الزبائن حول توفر المنتجات والأسعار بشكل فوري.",
-    tipsEn: "Activate instant messaging on your map profile to answer direct customer product and price inquiries."
+    tips: "قم بتفعيل ميزة الرسائل المباشرة في خريطتك لتستقبل استفسارات الزبائن حول توفر المنتجات والمواصفات بشكل فوري.",
+    tipsEn: "Activate instant messaging on your map profile to answer direct customer product and specification inquiries."
   }
 };
 

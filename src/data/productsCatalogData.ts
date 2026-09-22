@@ -79,7 +79,7 @@ ${nameToPrint}
 ${titleToPrint}
 ${centerToSelect}
 
-يرجى تزويدي بالأسعار والخيارات المتوفرة وبدء تجهيز مسودة التصميم والبرمجة السحابية مع دمج كافة وسائل التواصل والروابط.`;
+يرجى تزويدي بكافة الخيارات والمواصفات المتوفرة وبدء تجهيز مسودة التصميم والبرمجة السحابية مع دمج كافة وسائل التواصل والروابط.`;
 
     return `https://wa.me/963933888999?text=${encodeURIComponent(text)}`;
   } else {
@@ -96,7 +96,7 @@ ${nameToPrint}
 ${titleToPrint}
 ${centerToSelect}
 
-Please provide available options, pricing, and initiate the custom design draft and cloud profile setup with all social links.`;
+Please provide available options, specifications, and initiate the custom design draft and cloud profile setup with all social links.`;
 
     return `https://wa.me/963933888999?text=${encodeURIComponent(text)}`;
   }

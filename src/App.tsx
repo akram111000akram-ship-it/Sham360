@@ -12,6 +12,7 @@ import { ActivateCardPage } from "./pages/ActivateCardPage";
 
 function AppContent() {
   const { currentRoute } = useRouter();
+  const isPublicProfileView = currentRoute.route === "profile";
 
   const renderCurrentPage = () => {
     switch (currentRoute.route) {
@@ -35,8 +36,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white text-slate-900 selection:bg-blue-600 selection:text-white transition-colors duration-200">
-      {/* Ecosystem Top Navigation Bar */}
-      <Header />
+      {/* Ecosystem Top Navigation Bar - strictly removed from public smart profile view */}
+      {!isPublicProfileView && <Header />}
 
       {/* Dynamic Route Viewport */}
       <div className="flex-1">

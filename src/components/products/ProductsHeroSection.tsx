@@ -345,7 +345,7 @@ export const ProductsHeroSection: React.FC<ProductsHeroSectionProps> = ({
               <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-1">
                 <span>
                   <strong className="text-slate-900 font-black">
-                    {isAr ? "السعر حسب الطلب والكميات" : "Custom quotes by volume"}
+                    {isAr ? "تجهيز مخصص حسب الطلب والكميات" : "Custom specs tailored by order & volume"}
                   </strong>{" "}
                   • {isAr ? "برمجة سحابية وتصميم مجاني" : "Free cloud setup & design"}
                 </span>

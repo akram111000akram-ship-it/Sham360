@@ -4,7 +4,8 @@ import { useLanguage } from "../services/LanguageContext";
 import {
   subscribeToAuthChanges,
   logout,
-  getCurrentUser
+  getCurrentUser,
+  isProjectOwner
 } from "../services/authService";
 import {
   getProfilesByOwner,
@@ -13,7 +14,6 @@ import {
   getFirestoreProfileBySlug,
   getProfileBySlug
 } from "../services/profileService";
-import { updateProfileInSupabase, isSupabaseConfigured } from "../services/supabase";
 import { FirestoreProfile, Sham360ProfileData } from "../types";
 import { Sham360ProfileView } from "../components/Sham360ProfileView";
 import { DashboardAuth } from "../components/dashboard/DashboardAuth";
@@ -194,7 +194,6 @@ export const Dashboard: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [supabaseStatus, setSupabaseStatus] = useState<string>("");
 
   // New Link inputs
   const [newLinkLabel, setNewLinkLabel] = useState("");
@@ -221,15 +220,39 @@ export const Dashboard: React.FC = () => {
         if (targetSlug) {
           const matched = await getFirestoreProfileBySlug(targetSlug);
           if (matched && isMounted) {
-            setProfile(matched);
-            if (currentRoute.params.activated === "true") {
-              setActivationAlert(
+            // Check ownership: project owner can edit any profile, regular users can only edit their assigned profile
+            const canManage =
+              isProjectOwner(currentUser) ||
+              !matched.ownerUid ||
+              matched.ownerUid === currentUser?.uid ||
+              !currentUser; // unauthenticated preview or initial card setup
+
+            if (!canManage) {
+              showToast(
                 isAr
-                  ? "🎉 مبروك! تم تفعيل بطاقتك بنجاح بحساب Google. يمكنك الآن تعديل بيانات ملفك وحفظها."
-                  : "🎉 Congratulations! Your NFC card has been linked with your Google account. You can now customize your digital profile."
+                  ? "عذراً، هذا الملف مخصص لمستخدم آخر. يمكنك فقط تعديل الملفات الخاصة بك."
+                  : "Access denied: You can only edit your own assigned profile.",
+                "error"
               );
+              // Fallback to user's own profile
+              if (currentUser?.uid) {
+                const owned = await getProfilesByOwner(currentUser.uid);
+                if (owned && owned.length > 0 && isMounted) {
+                  setProfile(owned[0]);
+                  return;
+                }
+              }
+            } else {
+              setProfile(matched);
+              if (currentRoute.params.activated === "true") {
+                setActivationAlert(
+                  isAr
+                    ? "🎉 مبروك! تم تفعيل بطاقتك بنجاح بحساب Google. يمكنك الآن تعديل بيانات ملفك وحفظها."
+                    : "🎉 Congratulations! Your NFC card has been linked with your Google account. You can now customize your digital profile."
+                );
+              }
+              return;
             }
-            return;
           }
         }
 
@@ -283,7 +306,7 @@ export const Dashboard: React.FC = () => {
       setProfile(updatedProfile);
     }
 
-    // Auto-save to Supabase & Firestore immediately
+    // Auto-save to Firestore immediately
     await saveProfileChanges(updatedProfile, false);
   };
 
@@ -309,47 +332,40 @@ export const Dashboard: React.FC = () => {
     await saveProfileChanges(updatedProfile, true);
   };
 
-  // Universal save handler for profile changes (updates Supabase & Firestore)
+  // Universal save handler for profile changes (updates Firestore)
   const saveProfileChanges = async (profileDataToSave = profile, notify = true) => {
+    // Security check: regular users can only save their own profile, owner can save all
+    if (
+      currentUser?.uid &&
+      profileDataToSave.ownerUid &&
+      profileDataToSave.ownerUid !== currentUser.uid &&
+      !isProjectOwner(currentUser)
+    ) {
+      showToast(
+        isAr
+          ? "عذراً، لا تملك صلاحية تعديل هذا الملف. يمكنك فقط تعديل ملفك المخصص."
+          : "Access denied: You can only update your own assigned profile.",
+        "error"
+      );
+      return;
+    }
+
     setSaving(true);
     // Keep local state in sync immediately
     setProfile(profileDataToSave);
     try {
-      // 1. Sync to Supabase directly
-      const supabaseResult = await updateProfileInSupabase(
-        profileDataToSave.slug || profileDataToSave.id,
-        {
-          direct_redirect_enabled: Boolean(profileDataToSave.direct_redirect_enabled),
-          direct_redirect_url: profileDataToSave.direct_redirect_url || "",
-          name: profileDataToSave.name,
-          title: profileDataToSave.title,
-          phone: profileDataToSave.phone,
-          whatsapp: profileDataToSave.whatsapp,
-          email: profileDataToSave.email,
-          city: profileDataToSave.city
-        }
-      );
-
-      // 2. Sync to Firestore / Local Storage via profileService
+      // Sync to Firestore via profileService
       await updateProfile(profileDataToSave.id, {
         ...profileDataToSave,
-        ownerUid: currentUser?.uid || "demo-user"
+        ownerUid: profileDataToSave.ownerUid || currentUser?.uid || "demo-user"
       });
 
       if (notify) {
-        if (isSupabaseConfigured) {
-          showToast(
-            isAr
-              ? "تم حفظ التغييرات وتحديث حالة التوجيه بنجاح في Supabase والسحابة!"
-              : "Saved & Direct Tap Mode successfully updated in Supabase & Cloud!"
-          );
-        } else {
-          showToast(
-            isAr
-              ? "تم حفظ نمط التوجيه المباشر بنجاح ومزامنته سحابياً!"
-              : "Direct Tap Redirect Mode saved and synced successfully!"
-          );
-        }
+        showToast(
+          isAr
+            ? "تم حفظ التغييرات وتحديث حالة التوجيه بنجاح في قاعدة بيانات Firestore!"
+            : "Saved & Direct Tap Mode successfully updated in Firestore database!"
+        );
       }
     } catch (error) {
       console.error("Save failed:", error);
@@ -709,16 +725,18 @@ export const Dashboard: React.FC = () => {
             <span>{isAr ? "المعاينة التفاعلية" : "Interactive Preview"}</span>
           </button>
 
-          {/* Quick Route to NFC Token Manager without page refresh */}
-          <button
-            type="button"
-            onClick={() => navigate("/admin?tab=tokens")}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer shrink-0 ms-auto"
-            title={isAr ? "مدير بطاقات ورموز NFC" : "NFC Token Manager"}
-          >
-            <CreditCard className="w-3.5 h-3.5 text-amber-600" />
-            <span>{isAr ? "مدير بطاقات NFC" : "NFC Token Manager"}</span>
-          </button>
+          {/* Quick Route to NFC Token Manager - strictly restricted to project owner */}
+          {isProjectOwner(currentUser) && (
+            <button
+              type="button"
+              onClick={() => navigate("/admin?tab=tokens")}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all cursor-pointer shrink-0 ms-auto"
+              title={isAr ? "مدير بطاقات ورموز NFC" : "NFC Token Manager"}
+            >
+              <CreditCard className="w-3.5 h-3.5 text-amber-600" />
+              <span>{isAr ? "مدير بطاقات NFC" : "NFC Token Manager"}</span>
+            </button>
+          )}
         </div>
 
         {/* Activation Success Celebration Banner */}

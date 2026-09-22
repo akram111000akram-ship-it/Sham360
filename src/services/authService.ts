@@ -192,8 +192,19 @@ export async function resetPassword(email: string): Promise<void> {
 }
 
 /**
- * Translates standard Firebase Auth error codes into clear Arabic messages.
+ * Project Owner email constant for strict Role-Based Access Control (RBAC).
  */
+export const PROJECT_OWNER_EMAIL = "Akram111000Akram@gmail.com";
+
+/**
+ * Checks if the given user or current authenticated user is the project owner.
+ */
+export function isProjectOwner(user?: { email?: string | null } | null): boolean {
+  const targetUser = user !== undefined ? user : getCurrentUser();
+  if (!targetUser || !targetUser.email) return false;
+  return targetUser.email.trim().toLowerCase() === PROJECT_OWNER_EMAIL.toLowerCase();
+}
+
 function translateAuthError(code?: string): string {
   switch (code) {
     case "auth/invalid-email":

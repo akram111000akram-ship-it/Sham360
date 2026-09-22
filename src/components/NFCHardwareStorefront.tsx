@@ -28,8 +28,8 @@ interface Product {
   categoryEn: string;
   badgeAr: string;
   badgeEn: string;
-  priceEstimateAr: string;
-  priceEstimateEn: string;
+  specHighlightAr: string;
+  specHighlightEn: string;
   descriptionAr: string;
   descriptionEn: string;
   featuresAr: string[];
@@ -51,8 +51,8 @@ const PRODUCTS: Product[] = [
     categoryEn: "Smart Business Cards",
     badgeAr: "الأكثر طلباً للأطباء والمدراء",
     badgeEn: "Best Seller for Executives",
-    priceEstimateAr: "تصميم مخصص وطباعة فاخرة",
-    priceEstimateEn: "Custom Design & Luxury Finish",
+    specHighlightAr: "تصميم مخصص وطباعة فاخرة",
+    specHighlightEn: "Custom Design & Luxury Finish",
     descriptionAr: "بطاقة هوية رقمية معدنية أو مطفية بملمس مخملي فاخر. تتيح لك مشاركة بروفايلك، أرقامك، ومعلومات شركتك بتمريرة واحدة على أي هاتف دون الحاجة لأي تطبيق.",
     descriptionEn: "Luxury matte or metallic business card. Share your digital identity, vCard, and company assets with a single tap on any phone without downloading apps.",
     featuresAr: [
@@ -86,8 +86,8 @@ const PRODUCTS: Product[] = [
     categoryEn: "Portable Identity Accessories",
     badgeAr: "عملية ومقاومة للصدمات",
     badgeEn: "Durable Everyday Carry",
-    priceEstimateAr: "صغيرة وعملية للميدان",
-    priceEstimateEn: "Compact for Field Work",
+    specHighlightAr: "صغيرة وعملية للميدان",
+    specHighlightEn: "Compact for Field Work",
     descriptionAr: "ميدالية مفاتيح خفيفة الوزن وأنيقة مزودة بشريحة NFC مدمجة مع حلقة معدنية صلبة. الحل الأمثل لمندوبي المبيعات، الفنيين، والموظفين الميدانيين.",
     descriptionEn: "Compact and stylish key fob tag with embedded NFC chip and reinforced stainless ring. Ideal for realtors, sales teams, and active field specialists.",
     featuresAr: [
@@ -120,8 +120,8 @@ const PRODUCTS: Product[] = [
     categoryEn: "Hospitality & Clinic Solutions",
     badgeAr: "مضاعفة تقييمات Google 5-Stars",
     badgeEn: "Boost Google 5-Star Reviews 3x",
-    priceEstimateAr: "باقات متكاملة للطاولات",
-    priceEstimateEn: "Bulk Venue Bundles",
+    specHighlightAr: "باقات متكاملة للطاولات",
+    specHighlightEn: "Bulk Venue Bundles",
     descriptionAr: "ملصقات وحوامل أكريليك مخصصة لطاولات المطاعم، المقاهي، ومكاتب الاستقبال. بمجرد أن يضع الزبون هاتفه فوق الستاند، تُفتح صفحة تقييم Google أو المنيو فوراً!",
     descriptionEn: "Smart acrylic table stands and NFC puck stickers for dining tables and counters. Direct patrons to leave 5-star Google Reviews or view menus with zero friction.",
     featuresAr: [
@@ -154,8 +154,8 @@ const PRODUCTS: Product[] = [
     categoryEn: "Reception & Counter Displays",
     badgeAr: "واجهة فخمة للاستقبال",
     badgeEn: "Executive Front Desk Display",
-    priceEstimateAr: "تصنيع يدوي فاخر حسب المقاس",
-    priceEstimateEn: "Bespoke Acrylic Craftsmanship",
+    specHighlightAr: "تصنيع يدوي فاخر حسب المقاس",
+    specHighlightEn: "Bespoke Acrylic Craftsmanship",
     descriptionAr: "لوحات طاولة وجدارية أنيقة من الأكريليك الشفاف والخشب المصقول المدمجة بتقنيتي NFC و QR Code. مخصصة لكاونترات الاستقبال، غرف الاجتماعات، ومكاتب الشركات الفاخرة.",
     descriptionEn: "Premium acrylic and polished wood desk stands equipped with integrated NFC chip and laser-engraved QR codes. Built for reception desks, hotel lobbies, and executive suites.",
     featuresAr: [
@@ -496,7 +496,7 @@ export const NFCHardwareStorefront: React.FC<NFCHardwareStorefrontProps> = ({ is
               <div className="space-y-1">
                 <span className="text-xs font-bold text-slate-400">{isAr ? "جاهز للتنفيذ والطباعة" : "Ready for Custom Print"}</span>
                 <h4 className="text-lg font-black text-white">
-                  {isAr ? "احصل على عيّنة وعرض سعر" : "Request Free Sample & Quote"}
+                  {isAr ? "احصل على عيّنة وتخصيص مباشر" : "Request Free Sample & Direct Specs"}
                 </h4>
                 <p className="text-[11px] text-slate-400">
                   {isAr ? "فريقنا الهندسي يجهز لك مسودة التصميم مجاناً قبل اعتماد الطباعة." : "Our design engineers prepare your custom proof before production."}

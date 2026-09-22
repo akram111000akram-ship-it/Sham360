@@ -523,7 +523,7 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
   return (
     <div
       dir={isAr ? "rtl" : "ltr"}
-      className="fixed bottom-5 start-5 z-40 select-none animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="fixed bottom-3 start-3 sm:bottom-5 sm:start-5 z-30 select-none animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-[calc(100vw-1.5rem)]"
     >
       {/* 1. Initial State or Minimized State: Sleek Floating Pill "Play Music 🎵" */}
       {!hasUserStarted || isMinimized ? (
@@ -539,7 +539,7 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
               ? "تشغيل نغمة البروفايل الهادئة 🎵"
               : "Play Background Music 🎵"
           }
-          className="group relative flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+          className="group relative flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer max-w-full"
           style={{
             boxShadow: `0 8px 24px -4px ${primaryColor}40`
           }}
@@ -550,9 +550,9 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
             style={{ backgroundColor: primaryColor }}
           />
 
-          <div className="relative z-10 flex items-center gap-2">
+          <div className="relative z-10 flex items-center gap-2 min-w-0">
             <span
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-xs"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-xs shrink-0"
               style={{ backgroundColor: primaryColor }}
             >
               {isPlaying ? (
@@ -562,7 +562,7 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
               )}
             </span>
 
-            <span className="text-xs font-bold tracking-tight">
+            <span className="text-xs font-bold tracking-tight truncate">
               {isPlaying
                 ? isAr
                   ? "الموسيقى تعمل 🎵"
@@ -574,7 +574,7 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
 
             {/* Micro visualizer waves when playing */}
             {isPlaying && (
-              <div className="flex items-end gap-0.5 h-2.5 ms-1">
+              <div className="flex items-end gap-0.5 h-2.5 ms-1 shrink-0">
                 {[0.4, 0.9, 0.5, 1.0].map((h, i) => (
                   <span
                     key={i}
@@ -588,7 +588,7 @@ export const ProfileAudioPlayer: React.FC<ProfileAudioPlayerProps> = ({
         </button>
       ) : (
         /* 2. Expanded Interactive Glassmorphic Music Player Dock */
-        <div className="flex flex-col gap-2 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl text-slate-800 transition-all max-w-[320px] sm:max-w-[360px]">
+        <div className="flex flex-col gap-2 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl text-slate-800 transition-all w-[calc(100vw-1.5rem)] xs:w-auto max-w-[320px] sm:max-w-[360px]">
           <div className="flex items-center gap-3">
             {/* Rotating Vinyl / Oud / Rain Icon */}
             <div

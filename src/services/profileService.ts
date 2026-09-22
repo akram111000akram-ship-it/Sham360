@@ -15,7 +15,6 @@ import { db, isFirebaseConfigured } from "./firebase";
 import { Sham360ProfileData, FirestoreProfile } from "../types";
 import { mockBusinessProfile, mockIndividualProfile } from "../components/Sham360ProfileView";
 import { DIRECTORY_DATA, DirectoryItem } from "../data/directoryData";
-import { updateProfileInSupabase } from "./supabase";
 
 /**
  * Adapter converting a rich DirectoryItem into the component-ready Sham360ProfileData structure.
@@ -815,19 +814,6 @@ export async function createProfile(
  * Updates an existing profile record in the Firestore 'profiles' collection.
  */
 export async function updateProfile(id: string, data: Partial<FirestoreProfile>): Promise<void> {
-  // Sync to Supabase in background if configured or if id/slug available
-  try {
-    updateProfileInSupabase(data.slug || id, {
-      direct_redirect_enabled: data.direct_redirect_enabled ?? data.directRedirectEnabled,
-      direct_redirect_url: data.direct_redirect_url ?? data.directRedirectUrl,
-      ...data
-    }).catch((err) => {
-      console.warn("[SHAM360] Supabase background update notification:", err);
-    });
-  } catch (err) {
-    // Non-blocking
-  }
-
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, "profiles", id);

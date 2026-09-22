@@ -75,8 +75,6 @@ export interface StoreProduct {
   subtitleAr: string;
   subtitleEn: string;
   category: "cards" | "stands" | "keychains" | "tags";
-  priceSyp: number;
-  priceUsd: number;
   stockStatus: "in_stock" | "low_stock" | "out_of_stock" | "pre_order";
   stockCount: number;
   imageSrc: string;

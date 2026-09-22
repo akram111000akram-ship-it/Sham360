@@ -118,11 +118,13 @@ export interface Sham360ProfileData {
   category?: string;
   categoryEn?: string;
   hasVrTour?: boolean;
+  vrTourUrl?: string;
   vrTourEmbedUrl?: string;
   hasGoogleMapsOptimization?: boolean;
   rating?: number;
   reviewCount?: number;
   googleReviewUrl?: string;
+  instagram?: string;
   socialLinks?: Record<string, string>;
   primaryAction?: {
     label: string;
@@ -464,40 +466,36 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
     ? profile.nameEn
     : (profile.nameEn && profile.nameEn !== profile.name ? profile.name : undefined);
   const displayCompany = isAr
-    ? (profile.companyName || profile.businessName || (isBusiness ? profile.titleOrCategory : "منظومة شام 360 للحلول الذكية"))
-    : (profile.companyNameEn || profile.businessNameEn || profile.companyName || (isBusiness ? (profile.titleOrCategoryEn || profile.titleOrCategory) : "SHAM360 Smart Solutions Network"));
+    ? (profile.companyName || profile.businessName || (isBusiness ? profile.titleOrCategory : undefined))
+    : (profile.companyNameEn || profile.businessNameEn || profile.companyName || (isBusiness ? (profile.titleOrCategoryEn || profile.titleOrCategory) : undefined));
   const displayJobTitle = isAr
-    ? (profile.jobTitle || profile.titleOrCategory)
-    : (profile.jobTitleEn || profile.titleOrCategoryEn || profile.jobTitle || profile.titleOrCategory);
+    ? (profile.jobTitle || (isBusiness ? undefined : profile.titleOrCategory))
+    : (profile.jobTitleEn || profile.titleOrCategoryEn || profile.jobTitle || (isBusiness ? undefined : profile.titleOrCategory));
   const displayBio = isAr ? profile.bio : (profile.bioEn || profile.bio);
   const displayLocationText = isAr
     ? (profile.contactInfo?.locationText || (profile.city ? `${profile.city}، سوريا` : undefined))
     : (profile.contactInfo?.locationTextEn || (profile.cityEn || profile.city ? `${profile.cityEn || "Damascus"}, Syria` : undefined));
   const isDirectoryMember = profile.directoryMember ?? true;
 
-  // Clean Communication Channels
+  // Clean Communication Channels - Strictly genuine profile data
   const cleanWhatsapp = profile.contactInfo?.whatsapp
     ? profile.contactInfo.whatsapp.replace(/[^0-9]/g, "")
     : "";
-  const phoneCall = profile.contactInfo?.phone || profile.contactInfo?.whatsapp;
+  const phoneCall = profile.contactInfo?.phone;
   const emailContact = profile.contactInfo?.email;
   const websiteUrl = profile.contactInfo?.website || profile.primaryAction?.url;
-  const mapsUrl =
-    profile.contactInfo?.googleMapsUrl ||
-    (profile.city
-      ? `https://maps.google.com/?q=${encodeURIComponent((isAr ? profile.city : (profile.cityEn || profile.city)) + (isAr ? " سوريا" : " Syria"))}`
-      : "https://maps.google.com");
+  
+  // Google Maps URL - only if explicitly provided in contactInfo or if coordinates/map link present
+  const mapsUrl = profile.contactInfo?.googleMapsUrl || null;
+  
+  // Google Reviews URL - only if explicitly provided
   const googleReviewTargetUrl =
-    profile.googleReviewUrl ||
-    profile.contactInfo?.googleReviewUrl ||
-    profile.contactInfo?.googleMapsUrl ||
-    `https://www.google.com/search?q=${encodeURIComponent(
-      (displayName || "SHAM360") + (isAr ? " دمشق خرائط جوجل" : " Damascus Google Maps")
-    )}`;
+    profile.googleReviewUrl || profile.contactInfo?.googleReviewUrl || null;
 
-  const instagramUrl =
-    profile.socialLinks?.instagram || "https://instagram.com/sham360.online";
-  const instagramHandle = getInstagramHandle(instagramUrl);
+  // Instagram - only if explicitly provided
+  const rawInstagram = profile.socialLinks?.instagram || profile.instagram;
+  const instagramUrl = rawInstagram && rawInstagram.trim() !== "" ? rawInstagram : null;
+  const instagramHandle = instagramUrl ? getInstagramHandle(instagramUrl) : null;
 
   const hasSyrianPayments =
     profile.paymentMethodsEnabled !== false &&
@@ -740,31 +738,18 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
             {/* Soft gradient overlay so buttons remain readable */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/25" />
 
-            {/* Brand Sticker Pill in Corner (Identical to "Better Connected Co" / "Harvey" in image.png) */}
+            {/* Brand Sticker Pill in Corner (Pure badge with NO directory link) */}
             <div className="absolute top-3 end-3 z-20 max-w-[44%] flex justify-end">
-              {isDirectoryMember ? (
-                <a
-                  href="/directory"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 hover:bg-white text-slate-800 text-[10.5px] font-bold shadow-xs backdrop-blur-md border border-white/60 transition-all group max-w-full min-w-0"
-                >
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: activePalette.primary }}
-                  />
-                  <span className="truncate max-w-[85px] xs:max-w-[105px] sm:max-w-[125px]">
-                    {isAr ? (profile.companyName || "SHAM360") : (profile.companyNameEn || profile.companyName || "SHAM360")}
-                  </span>
-                  <Sparkles className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                </a>
-              ) : (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 text-slate-800 text-[10.5px] font-bold shadow-xs backdrop-blur-md border border-white/60 max-w-full min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: activePalette.primary }}
-                  />
-                  <span className="truncate max-w-[95px] xs:max-w-[115px]">{displayCompany}</span>
-                </div>
-              )}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 text-slate-800 text-[10.5px] font-bold shadow-xs backdrop-blur-md border border-white/60 select-none max-w-full min-w-0">
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: activePalette.primary }}
+                />
+                <span className="truncate max-w-[95px] xs:max-w-[115px] sm:max-w-[130px]">
+                  {displayCompany || (isAr ? "هوية ذكية معتمدة" : "Verified Identity")}
+                </span>
+                <CheckCircle2 className="w-3 h-3 text-blue-500 flex-shrink-0" />
+              </div>
             </div>
 
             {/* Floating Top Controls on Start Side (QR, Share, Language, Palette) */}
@@ -1001,7 +986,7 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
             )}
           </motion.button>
 
-          {profile.primaryAction && (
+          {profile.primaryAction && profile.primaryAction.url && profile.primaryAction.url.trim() !== "" && (
             <motion.a
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.97 }}
@@ -1091,67 +1076,71 @@ export const Sham360ProfileView: React.FC<Sham360ProfileViewProps> = ({
             </motion.a>
           )}
 
-          {/* 6. Instagram Account (@username) */}
-          <motion.a
-            whileTap={{ scale: 0.98 }}
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition-colors group cursor-pointer text-start"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-xs">
-                <RealInstagramIcon className="w-9 h-9" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-slate-950 block truncate">
-                  Instagram
-                </span>
-                <span className="text-[11px] text-slate-500 font-mono block truncate" dir="ltr">
-                  {instagramHandle}
-                </span>
-              </div>
-            </div>
-            <div className="text-slate-300 group-hover:text-slate-600 flex-shrink-0">
-              {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </div>
-          </motion.a>
-
-          {/* 7. Google 5-Star Reviews Booster Card */}
-          <motion.a
-            whileTap={{ scale: 0.98 }}
-            href={googleReviewTargetUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-amber-50/60 transition-colors group cursor-pointer text-start"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-xs">
-                <RealGoogleGIcon className="w-9 h-9" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-amber-900 truncate">
-                    {isAr ? "تقييم 5 نجوم على Google" : "Google 5-Star Reviews"}
-                  </span>
-                  <span className="text-amber-500 text-[11px] font-bold">★★★★★</span>
+          {/* 6. Instagram Account (@username) - conditionally rendered */}
+          {instagramUrl && (
+            <motion.a
+              whileTap={{ scale: 0.98 }}
+              href={instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition-colors group cursor-pointer text-start"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-xs">
+                  <RealInstagramIcon className="w-9 h-9" />
                 </div>
-                <span className="text-[11px] text-slate-500 block truncate">
-                  {profile.rating
-                    ? `${profile.rating.toFixed(1)} / 5.0 (${profile.reviewCount || 90}+ ${isAr ? "تقييم معتمد" : "verified reviews"})`
-                    : isAr
-                    ? "ادعمنا بتقييم 5 نجوم على Google"
-                    : "Leave a 5-star review on Google"}
-                </span>
+                <div className="min-w-0">
+                  <span className="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-slate-950 block truncate">
+                    Instagram
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-mono block truncate" dir="ltr">
+                    {instagramHandle}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="text-amber-500 flex-shrink-0">
-              {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </div>
-          </motion.a>
+              <div className="text-slate-300 group-hover:text-slate-600 flex-shrink-0">
+                {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </div>
+            </motion.a>
+          )}
 
-          {/* 8. 360° Virtual Tour Row (if available) */}
-          {profile.hasVrTour && (
+          {/* 7. Google 5-Star Reviews Booster Card - conditionally rendered */}
+          {googleReviewTargetUrl && (
+            <motion.a
+              whileTap={{ scale: 0.98 }}
+              href={googleReviewTargetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-amber-50/60 transition-colors group cursor-pointer text-start"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 drop-shadow-xs">
+                  <RealGoogleGIcon className="w-9 h-9" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-amber-900 truncate">
+                      {isAr ? "تقييم 5 نجوم على Google" : "Google 5-Star Reviews"}
+                    </span>
+                    <span className="text-amber-500 text-[11px] font-bold">★★★★★</span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 block truncate">
+                    {profile.rating
+                      ? `${profile.rating.toFixed(1)} / 5.0 (${profile.reviewCount || 90}+ ${isAr ? "تقييم معتمد" : "verified reviews"})`
+                      : isAr
+                      ? "ادعمنا بتقييم 5 نجوم على Google"
+                      : "Leave a 5-star review on Google"}
+                  </span>
+                </div>
+              </div>
+              <div className="text-amber-500 flex-shrink-0">
+                {isAr ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </div>
+            </motion.a>
+          )}
+
+          {/* 8. 360° Virtual Tour Row (only if configured and has tour URL) */}
+          {profile.hasVrTour && Boolean(profile.vrTourUrl || profile.vrTourEmbedUrl) && (
             <motion.button
               type="button"
               whileTap={{ scale: 0.98 }}
@@ -1790,8 +1779,8 @@ export const mockBusinessProfile: Sham360ProfileData = {
     facebook: "https://facebook.com/alyasmeen.damascus"
   },
   primaryAction: {
-    label: "🍽️ تصفح قائمة الطعام والأسعار (Menu)",
-    labelEn: "🍽️ View Menu & Pricing (Digital Menu)",
+    label: "🍽️ تصفح قائمة الطعام التفاعلية (Digital Menu)",
+    labelEn: "🍽️ View Interactive Digital Menu",
     url: "https://sham360.online/menu",
     actionType: "menu",
     iconName: "menu"

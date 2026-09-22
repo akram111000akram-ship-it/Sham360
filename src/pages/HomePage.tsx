@@ -212,7 +212,7 @@ export const HomePage: React.FC = () => {
     return (
       <div className="relative" dir={isAr ? "rtl" : "ltr"}>
         {/* Floating Toggle to Switch to Interactive Lab & 360 Tour */}
-        <div className="fixed bottom-6 end-6 z-40">
+        <div className="fixed bottom-20 sm:bottom-6 end-4 sm:end-6 z-40">
           <button
             type="button"
             onClick={() => setActiveViewMode("interactive")}
@@ -234,7 +234,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-600 selection:text-white relative" dir={isAr ? "rtl" : "ltr"}>
       {/* Floating Toggle to Return to Swiss Minimalist Design */}
-      <div className="fixed bottom-6 end-6 z-40">
+      <div className="fixed bottom-20 sm:bottom-6 end-4 sm:end-6 z-40">
         <button
           type="button"
           onClick={() => setActiveViewMode("swiss")}
@@ -941,7 +941,7 @@ export const HomePage: React.FC = () => {
       {/* =========================================================
           10. FLOATING WHATSAPP BUTTON
           ========================================================= */}
-      <div className="fixed bottom-6 left-6 z-40 flex items-center gap-2 group" dir="ltr">
+      <div className="fixed bottom-4 sm:bottom-6 start-4 sm:start-6 z-40 flex items-center gap-2 group" dir="ltr">
         <a
           href="https://wa.me/963933888999"
           target="_blank"

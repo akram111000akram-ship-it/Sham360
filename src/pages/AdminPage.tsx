@@ -60,12 +60,36 @@ import {
   uploadEventCover
 } from "../services/storageService";
 import { DIRECTORY_DATA, DirectoryItem } from "../data/directoryData";
+import {
+  getCurrentUser,
+  subscribeToAuthChanges,
+  isProjectOwner,
+  PROJECT_OWNER_EMAIL,
+  loginWithGoogle,
+  logout
+} from "../services/authService";
+import type { User } from "firebase/auth";
 
 type AdminTab = "products" | "tokens" | "events" | "directory";
 
 export const AdminPage: React.FC = () => {
   const { navigate } = useRouter();
   const { isAr, toggleLanguage } = useLanguage();
+
+  // Authentication & RBAC state
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsub = subscribeToAuthChanges((user) => {
+      setCurrentUser(user);
+      setIsAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  const isOwner = isProjectOwner(currentUser);
 
   const [activeTab, setActiveTab] = useState<AdminTab>(() => {
     if (typeof window !== "undefined") {
@@ -112,12 +136,14 @@ export const AdminPage: React.FC = () => {
     setTimeout(() => setFeedbackNotice(null), 4000);
   };
 
-  // Initial Data Fetch
+  // Initial Data Fetch - only executed if user is verified project owner
   useEffect(() => {
-    loadProducts();
-    loadTokens();
-    loadEvents();
-  }, []);
+    if (isOwner) {
+      loadProducts();
+      loadTokens();
+      loadEvents();
+    }
+  }, [isOwner]);
 
   const loadProducts = async () => {
     setLoadingProducts(true);
@@ -247,8 +273,6 @@ export const AdminPage: React.FC = () => {
       subtitleAr: (formData.get("subtitleAr") as string) || "",
       subtitleEn: (formData.get("subtitleEn") as string) || "",
       category: (formData.get("category") as any) || "cards",
-      priceSyp: Number(formData.get("priceSyp")) || 150000,
-      priceUsd: Number(formData.get("priceUsd")) || 12,
       stockStatus: (formData.get("stockStatus") as any) || "in_stock",
       stockCount: Number(formData.get("stockCount")) || 50,
       imageSrc:
@@ -339,6 +363,116 @@ export const AdminPage: React.FC = () => {
     setCopiedToken(id);
     setTimeout(() => setCopiedToken(null), 2500);
   };
+
+  const handleSignInAsOwner = async () => {
+    try {
+      setAuthError(null);
+      await loginWithGoogle();
+    } catch (err: any) {
+      setAuthError(err.message || "Failed to sign in");
+    }
+  };
+
+  // 1. Loading Authentication State
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4" />
+        <p className="text-sm font-bold text-slate-400">
+          {isAr ? "التحقق من صلاحيات مدير النظام..." : "Verifying administrator permissions..."}
+        </p>
+      </div>
+    );
+  }
+
+  // 2. Strict RBAC Enforcement - Non-Owner Access Guard
+  if (!isOwner) {
+    return (
+      <div
+        className={`min-h-screen bg-slate-950 text-white font-sans flex items-center justify-center p-4 sm:p-6 ${
+          isAr ? "[direction:rtl] text-right" : "[direction:ltr] text-left"
+        }`}
+        dir={isAr ? "rtl" : "ltr"}
+      >
+        <div className="max-w-md w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center">
+          {/* Glowing Restricted Shield */}
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-5 text-amber-400 shadow-inner">
+            <Lock className="w-8 h-8 stroke-[2.2]" />
+          </div>
+
+          <h2 className="text-xl sm:text-2xl font-black text-white mb-2">
+            {isAr ? "صلاحيات مدير النظام مقيّدة" : "Project Owner Access Required"}
+          </h2>
+
+          <p className="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">
+            {isAr
+              ? `توليد بطاقات NFC المشفرة، إدارة المخزون، والتحكم بالدليل الوطني محصورة حصراً بحساب مالك المشروع المعتمد: (${PROJECT_OWNER_EMAIL}).`
+              : `NFC token generation, hardware store inventory, and system directory controls are exclusively restricted to the verified project owner (${PROJECT_OWNER_EMAIL}).`}
+          </p>
+
+          {authError && (
+            <div className="p-3 mb-4 rounded-xl bg-red-950/60 border border-red-800/80 text-red-300 text-xs font-bold text-start">
+              {authError}
+            </div>
+          )}
+
+          {/* Current Session Info */}
+          {currentUser ? (
+            <div className="mb-6 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-start">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">
+                {isAr ? "الحساب الحالي المسجل:" : "Currently Signed In As:"}
+              </span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-mono font-bold text-slate-300 truncate">
+                  {currentUser.email || currentUser.displayName || currentUser.uid}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950/60 text-amber-400 border border-amber-800/60 shrink-0">
+                  {isAr ? "مستخدم عادي" : "Regular User"}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={handleSignInAsOwner}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Globe className="w-4 h-4" />
+                <span>
+                  {isAr
+                    ? "تسجيل الدخول كمالك النظام (Google)"
+                    : "Sign In as Project Owner (Google)"}
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm border border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>{isAr ? "الانتقال إلى لوحة التحكم الشخصية" : "Go to User Dashboard"}</span>
+              <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+            </button>
+
+            {currentUser && (
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="w-full py-2 text-xs text-slate-500 hover:text-slate-400 font-semibold cursor-pointer transition-colors"
+              >
+                {isAr ? "تسجيل الخروج من هذا الحساب" : "Sign out of current account"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -504,8 +638,8 @@ export const AdminPage: React.FC = () => {
                 </h3>
                 <p className="text-xs text-slate-400">
                   {isAr
-                    ? "تعديل الأسعار بالليرة السورية والدولار وتحديث المخزون والمواصفات."
-                    : "Update hardware pricing (SYP / USD), stock levels, and specs."}
+                    ? "إدارة مواصفات العتاد الذكي وخيارات التخصيص والمخزون المتاح."
+                    : "Manage hardware specifications, custom inquiry options, and stock."}
                 </p>
               </div>
 
@@ -557,14 +691,20 @@ export const AdminPage: React.FC = () => {
 
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-500 block">السعر (SYP):</span>
-                          <span className="font-bold text-cyan-300">
-                            {prod.priceSyp.toLocaleString()} ل.س
+                          <span className="text-[10px] text-slate-500 block">
+                            {isAr ? "طريقة الطلب:" : "Ordering Mode:"}
+                          </span>
+                          <span className="font-bold text-emerald-400">
+                            {isAr ? "طلب مباشر وتخصيص فوري" : "Direct Order & Custom Specs"}
                           </span>
                         </div>
                         <div className="text-end">
-                          <span className="text-[10px] text-slate-500 block">السعر (USD):</span>
-                          <span className="font-bold text-emerald-400">${prod.priceUsd}</span>
+                          <span className="text-[10px] text-slate-500 block">
+                            {isAr ? "المخزون:" : "Stock:"}
+                          </span>
+                          <span className="font-bold text-slate-300">
+                            {prod.stockCount} {isAr ? "قطعة" : "units"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1276,28 +1416,16 @@ export const AdminPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-400 mb-1">السعر (SYP) *</label>
-                    <input
-                      name="priceSyp"
-                      type="number"
-                      defaultValue={editingProduct?.priceSyp || 185000}
-                      required
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-400 mb-1">السعر (USD) *</label>
-                    <input
-                      name="priceUsd"
-                      type="number"
-                      defaultValue={editingProduct?.priceUsd || 15}
-                      required
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-slate-400 mb-1">
+                    {isAr ? "الجمهور المستهدف والمواصفات" : "Target Audience & Specs"}
+                  </label>
+                  <input
+                    name="idealForAr"
+                    defaultValue={editingProduct?.idealForAr || "أصحاب الأعمال والمهنيين والمؤسسات"}
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                    placeholder="مثال: أصحاب الأعمال والمهنيين والمؤسسات"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

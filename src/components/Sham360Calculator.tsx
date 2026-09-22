@@ -7,7 +7,6 @@ interface ServiceOption {
   name: string;
   nameEn: string;
   icon: any;
-  basePriceUsd: number;
   description: string;
   descriptionEn: string;
   estimatedGrowth: string;
@@ -20,7 +19,6 @@ const SERVICES_LIST: ServiceOption[] = [
     name: "توثيق وضبط خريطة Google وتحسين الظهور",
     nameEn: "Google Maps Verification & Local SEO",
     icon: MapPin,
-    basePriceUsd: 50,
     description: "إعداد ملكية الخريطة، اختيار الكلمات المفتاحية، وتفعيل أوقات العمل والربط بواتساب.",
     descriptionEn: "Map ownership setup, keyword optimization, operating hours, and WhatsApp integration.",
     estimatedGrowth: "+40% زيادة بالاتصالات",
@@ -31,7 +29,6 @@ const SERVICES_LIST: ServiceOption[] = [
     name: "تصوير جولة افتراضية تفاعلية 360° فوتوغرافية",
     nameEn: "8K Interactive 360° Virtual Tour Photography",
     icon: Compass,
-    basePriceUsd: 80,
     description: "تصوير احترافي للصالون الداخلي والخارجي، معالجة HDR، ودمج مباشر على خرائط Google.",
     descriptionEn: "Interior/exterior HDR photography, 360° panorama stitching & Google Street View publish.",
     estimatedGrowth: "+65% ثقة وتفاعل للزوار",
@@ -42,7 +39,6 @@ const SERVICES_LIST: ServiceOption[] = [
     name: "موقع إلكتروني تعريفي حديث ذكي ثنائي اللغة",
     nameEn: "Modern High-Speed Bilingual Website",
     icon: Globe,
-    basePriceUsd: 120,
     description: "تصميم موقع فائق السرعة يعرض خدماتك، كتالوج المنتجات، وربط حجز مباشر عبر واتساب.",
     descriptionEn: "Ultra-fast website showcasing your catalog and services with direct WhatsApp booking.",
     estimatedGrowth: "+80% انطباع احترافي",
@@ -53,7 +49,6 @@ const SERVICES_LIST: ServiceOption[] = [
     name: "درع حماية الخريطة والدعم الشهري ضد بلاغات المنافسين",
     nameEn: "Map Protection Shield & Monthly Defense",
     icon: ShieldCheck,
-    basePriceUsd: 40,
     description: "متابعة دورية، التصدّي للبلاغات الكاذبة، وحماية البيانات من التعديل العشوائي.",
     descriptionEn: "Active monitoring, protection against spam reports, and data lock integrity.",
     estimatedGrowth: "استقرار وضمان 100%",
@@ -103,8 +98,8 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
 
   const waMessage = encodeURIComponent(
     isAr 
-      ? `مرحباً Sham360 👋\nأود الاستفسار والحصول على عرض سعر دقيق لمشروعي (${currentBusiness.name}):\n\n📌 الخدمات المختارة: ${selectedServiceNames}\n🎯 النسبة المتوقعة لنمو الحضور: +${calculatedGrowthPercent}%\nيرجى التواصل معي لترتيب استشارة مجانية لموقعي.`
-      : `Hello Sham360 👋\nI would like an inquiry & custom estimate for my business (${currentBusiness.nameEn}):\n\n📌 Selected Services: ${selectedServiceNames}\n🎯 Projected Reach Growth: +${calculatedGrowthPercent}%\nPlease contact me to arrange a free audit consultation.`
+      ? `مرحباً Sham360 👋\nأود الاستفسار وتنسيق باقة التطوير المناسبة لمشروعي (${currentBusiness.name}):\n\n📌 الخدمات المختارة: ${selectedServiceNames}\n🎯 النسبة المتوقعة لنمو الحضور: +${calculatedGrowthPercent}%\nيرجى التواصل معي لترتيب استشارة مجانية لموقعي.`
+      : `Hello Sham360 👋\nI would like an inquiry & direct specifications for my business (${currentBusiness.nameEn}):\n\n📌 Selected Services: ${selectedServiceNames}\n🎯 Projected Reach Growth: +${calculatedGrowthPercent}%\nPlease contact me to arrange a free audit consultation.`
   );
 
   return (
@@ -118,7 +113,7 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
             <span>{isAr ? "حاسبة التحول الرقمي الذكية" : "Smart Digital Transformation Calculator"}</span>
           </div>
           <h3 className="text-lg font-black text-slate-950">
-            {isAr ? "احسب تكلفة وعائد تطوير حضورك الرقمي مع Sham360" : "Calculate Your ROI & Growth with Sham360"}
+            {isAr ? "احسب عائد ونمو حضورك الرقمي مع Sham360" : "Calculate Your Growth & Reach with Sham360"}
           </h3>
           <p className="text-xs text-slate-500 mt-1">
             {isAr 
@@ -243,7 +238,7 @@ export function Sham360Calculator({ lang = "ar" }: { lang?: "ar" | "en" }) {
               className="w-full py-3.5 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 group"
             >
               <MessageCircle className="w-4 h-4 text-slate-950 fill-current" />
-              <span>{isAr ? "اطلب التقدير وحجز استشارة مجانية" : "Get Quote & Book Free Audit"}</span>
+              <span>{isAr ? "طلب الباقة وحجز استشارة مجانية" : "Request Specs & Book Free Audit"}</span>
               <ArrowLeft className={`w-4 h-4 transition-transform ${isAr ? "group-hover:-translate-x-1" : "group-hover:translate-x-1 rotate-180"}`} />
             </a>
             <span className="text-[10px] text-slate-400 text-center">
