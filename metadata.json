@@ -1,0 +1,8 @@
+{
+  "name": "Sham360",
+  "description": "بطاقات الأعمال الذكية، منتجات NFC، ودليل الأعمال السوري الشامل. كل ما تحتاجه لبناء حضور رقمي احترافي يضمن تصدّرك في نتائج البحث والخرائط.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

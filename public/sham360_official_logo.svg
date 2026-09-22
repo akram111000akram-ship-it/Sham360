@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="100%" height="100%" fill="none">
+  <!-- Clean white background matching official PDF -->
+  <rect width="600" height="500" fill="#FFFFFF" />
+
+  <defs>
+    <!-- Sky-to-Royal Blue Gradient for Pin Crown & Globe Ocean -->
+    <linearGradient id="shamBlueGrad" x1="220" y1="80" x2="380" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#38BDF8" />
+      <stop offset="50%" stopColor="#0099FF" />
+      <stop offset="100%" stopColor="#0066FF" />
+    </linearGradient>
+
+    <!-- Vertical Gradient for Pin Bottom Shield Tip -->
+    <linearGradient id="shamTipGrad" x1="300" y1="195" x2="300" y2="295" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#00A6FF" />
+      <stop offset="100%" stopColor="#005CE6" />
+    </linearGradient>
+
+    <!-- Clip path for circular world globe (center: 300, 160; radius: 64) -->
+    <clipPath id="shamGlobeClip">
+      <circle cx="300" cy="160" r="64" />
+    </clipPath>
+
+    <!-- Negative-space mask for the swoosh: cleanly separates swoosh from globe & tip -->
+    <mask id="shamSwooshClearance">
+      <rect width="600" height="500" fill="white" />
+      <!-- Black stroke cuts a clean gap around the orbit swoosh -->
+      <path
+        d="M 188 238 C 178 272 235 284 296 252 C 348 224 394 178 424 132"
+        fill="none"
+        stroke="black"
+        stroke-width="26"
+        stroke-linecap="round"
+      />
+    </mask>
+  </defs>
+
+  <g id="sham360-emblem">
+    <!-- 1. TOP PIN ARCH (Outer rounded crown with clean white gap around the globe) -->
+    <path
+      d="M 226 200 A 88 88 0 1 1 372 126"
+      fill="none"
+      stroke="url(#shamBlueGrad)"
+      stroke-width="12"
+      stroke-linecap="round"
+    />
+
+    <!-- 2. PIN BOTTOM TIP (Sharp downward shield pointer with gradient) -->
+    <path
+      d="M 300 296 C 278 268 254 240 244 220 C 272 232 312 222 350 190 C 358 205 334 252 300 296 Z"
+      fill="url(#shamTipGrad)"
+      mask="url(#shamSwooshClearance)"
+    />
+
+    <!-- 3. GLOBE OCEAN (Vibrant gradient circle) -->
+    <circle
+      cx="300"
+      cy="160"
+      r="64"
+      fill="url(#shamBlueGrad)"
+      mask="url(#shamSwooshClearance)"
+    />
+
+    <!-- 4. PURE WHITE CONTINENTS (Crisp vector continents inside globe) -->
+    <g clip-path="url(#shamGlobeClip)" mask="url(#shamSwooshClearance)" fill="#FFFFFF">
+      <!-- Greenland -->
+      <path d="M 292 108 C 298 106 306 112 301 120 C 295 122 290 115 292 108 Z" />
+
+      <!-- North America -->
+      <path d="M 250 120 
+               C 258 111 275 113 283 120 
+               C 287 127 278 134 275 139 
+               C 272 145 270 155 264 158 
+               C 258 156 254 150 249 146 
+               C 245 139 242 127 250 120 Z" />
+      <path d="M 268 156 C 272 161 268 167 265 172 C 262 172 260 167 263 160 Z" />
+
+      <!-- South America -->
+      <path d="M 266 172 
+               C 276 174 285 183 282 193 
+               C 279 202 273 213 268 218 
+               C 263 215 266 204 266 194 
+               C 261 187 260 177 266 172 Z" />
+
+      <!-- Europe & Scandinavia -->
+      <path d="M 307 114 C 312 109 320 114 315 122 C 309 125 305 118 307 114 Z" />
+      <path d="M 301 124 C 312 119 325 123 322 134 C 314 137 306 134 301 124 Z" />
+      <circle cx="295" cy="121" r="2.5" />
+
+      <!-- Africa -->
+      <path d="M 306 141 
+               C 318 138 330 143 327 154 
+               C 325 166 327 177 320 188 
+               C 314 196 309 204 306 208 
+               C 302 204 304 190 304 178 
+               C 301 167 299 155 306 141 Z" />
+      <circle cx="329" cy="189" r="2.5" />
+
+      <!-- Asia & Middle East -->
+      <path d="M 324 123 C 338 120 355 130 350 144 C 344 151 330 146 327 137 Z" />
+      <path d="M 330 145 C 339 143 352 150 346 161 C 335 160 329 152 330 145 Z" />
+      <path d="M 314 138 C 320 138 323 145 317 148 C 314 146 313 142 314 138 Z" />
+    </g>
+
+    <!-- 5. THE 360° ORBITAL SWOOSH (Royal/Cyan gradient looping around the pin) -->
+    <path
+      d="M 188 238 C 178 272 235 284 296 252 C 348 224 394 178 424 132"
+      fill="none"
+      stroke="url(#shamBlueGrad)"
+      stroke-width="11"
+      stroke-linecap="round"
+    />
+
+    <!-- 6. SUPERSONIC PASSENGER JET AIRPLANE (At the tip of the orbit swoosh) -->
+    <g transform="translate(424, 132) rotate(42)">
+      <path
+        d="M 0 -28 
+           C 2.5 -20 3.5 -6 3.5 0 
+           L 26 11 
+           L 26 15 
+           L 3.5 10 
+           L 3.5 22 
+           L 11.5 28 
+           L 11.5 31 
+           L 0 28 
+           L -11.5 31 
+           L -11.5 28 
+           L -3.5 22 
+           L -3.5 10 
+           L -26 15 
+           L -26 11 
+           L -3.5 0 
+           C -3.5 -6 -2.5 -20 0 -28 Z"
+        fill="#0066FF"
+      />
+    </g>
+  </g>
+
+  <!-- 7. TYPOGRAPHY: Sham360 -->
+  <text x="300" y="380" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif" font-weight="900" font-size="68" letter-spacing="-1">
+    <tspan fill="#0A1C3E">Sham</tspan><tspan fill="#0066FF">360</tspan>
+  </text>
+
+  <!-- 8. SUBTITLE: SMART DIGITAL PRESENCE (Azure Blue #0088EB as in PDF) -->
+  <text x="300" y="424" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif" font-weight="800" font-size="20" letter-spacing="6.5" fill="#0088EB">
+    SMART DIGITAL PRESENCE
+  </text>
+</svg>
